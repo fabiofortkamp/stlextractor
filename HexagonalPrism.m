@@ -2,12 +2,12 @@ classdef HexagonalPrism
   %HEXAGONALPRISM Representation of a prism with two hexagonal faces
 
   properties (SetAccess = immutable)
-    thickness (1,1) double {mustBePositive}
-    volume (1,1) double {mustBePositive}
+    thickness (1,1) double
+    volume (1,1) double
     position (1,3) double 
-    radius (1,1) double {mustBePositive}
-    normal (1,3) double {mustBeNormalized}
-    area (1,1) double {mustBePositive}
+    radius (1,1) double
+    normal (1,3) double
+    area (1,1) double
   end
 
   properties (Access = private)
