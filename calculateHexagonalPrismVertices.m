@@ -9,15 +9,8 @@ arguments
     center (1,3) double {mustBeFinite}
 end
 
-% Create orthogonal vectors for the orientation
-if abs(orientation(3)) < 0.9  % If not close to z-axis
-  perpendicular = cross(orientation, [0, 0, 1]);
-else
-  perpendicular = cross(orientation, [1, 0, 0]);
-end
-
-perpendicular = perpendicular / norm(perpendicular);
-third_vector = cross(orientation, perpendicular);
+zlocal = orientation;
+[xlocal,ylocal] = createOrthonormalSystem(zlocal);
 
 % Create vertices for the hexagon in the local coordinate system
 angles = linspace(0, 2*pi, 7);  % 7 points (with duplicate for complete loop)
@@ -33,14 +26,14 @@ for i = 1:6
   y = radius * sin(angle);
 
   % Calculate vertex in global coordinate system for bottom face
-  vertex_bottom = x * perpendicular + ...
-    y * third_vector + ...
+  vertex_bottom = x * xlocal + ...
+    y * ylocal + ...
     center - (height/2) * orientation;
   vertices_bottom(i, :) = vertex_bottom;
 
   % Calculate vertex in global coordinate system for top face
-  vertex_top = x * perpendicular + ...
-    y * third_vector + ...
+  vertex_top = x * xlocal + ...
+    y * ylocal + ...
     center + (height/2) * orientation;
   vertices_top(i, :) = vertex_top;
 end
@@ -48,3 +41,4 @@ end
 % Combine all vertices
 vertices = [vertices_bottom; vertices_top];
 end
+
