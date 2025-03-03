@@ -1,8 +1,12 @@
-function [radius, height, orientation, center] = parse_filename(filename)
-    % Parse a filename to extract the encoded parameters
-    % Input: Filename string (with or without path and extension)
-    % Output: radius, height, orientation vector, and center vector (if present)
-    
+function [radius, height, orientation, center] = parseSTLTestFilename(filename)
+% PARSESTLTESTFILENAME Parse geometric information from a test STL file
+%
+%   [R,H,O,C] = PARSESTLTESTFILENAME(filename) extracts the radius, height,
+%      orientation and centerpoint of the object contained in the STL file 'filename'
+
+arguments
+    filename string {mustBeFile}
+end
     % Extract just the filename without path and extension
     [~, name, ~] = fileparts(filename);
     
