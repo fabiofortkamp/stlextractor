@@ -1,4 +1,11 @@
 function faces = calculateHexagonalPrismFaces
+
+% generated with claude.ai
+
+% This uses fan triangulation to split a list of vertices of an hexagonal prism
+% into triangules
+% See  https://en.wikipedia.org/wiki/Fan_triangulation
+
 % Create triangular faces
 faces = zeros(20, 3);  % 8 triangles for top/bottom + 12 for sides
 
