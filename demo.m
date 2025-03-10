@@ -3,5 +3,9 @@
 
 exampleFile = fullfile("tests","particles_200.stl");
 outputDir = "tmp";
-mkdir(outputDir);
+if ~isfolder(outputDir)
+    mkdir(outputDir);
+end
 extractor = STLExtractor(exampleFile,outputDir);
+l = extractor.process();
+disp(l);

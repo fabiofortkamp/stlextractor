@@ -1,4 +1,4 @@
-function [Packing,geometricInfo] = AnalyzeSTL(STL_filename, n_particles,  workingDir,ScaleFactor_Distancing)
+function [Packing,geometricInfo] = AnalyzeSTL(STL_filename,   workingDir,ScaleFactor_Distancing)
 % ANALYZESTL Proceess the STL file to calculate geometric parameters and
 %   produce individual files.
 %
@@ -23,32 +23,25 @@ function [Packing,geometricInfo] = AnalyzeSTL(STL_filename, n_particles,  workin
 
 TR = stlread(STL_filename) ;
 
-[bins,n_actual_particles] = extractIndividualParticles(n_particles, TR);
+[bins,n_actual_particles] = extractIndividualParticles(TR);
 
-[Packing,geometricInfo] = processParticles(n_actual_particles,bins,TR,ScaleFactor_Distancing,workingDir,STL_filename);
+[Packing,geometricInfo] = processParticles(n_actual_particles,bins,TR,ScaleFactor_Distancing,workingDir);
 
 end
 
-function [particles,n_actual_particles] = extractIndividualParticles(n_particles, TR)
+function [particles,n_actual_particles] = extractIndividualParticles(TR)
 % EXTRACTINDIVIDUALPARTICLES Separate all triangles into connected ones
 %
-%   [particles, n_actual_particles] = EXTRACTINDIVIDUALPARTICLES(n_particles, TR) will
+%   [particles, n_actual_particles] = EXTRACTINDIVIDUALPARTICLES(TR) will
 %      load a triangulation object TR and divide the contained triangles into individual
-%      "particles" that contain connected triangles. At most n_particles will be
-%      created; if this argument is empty, the maximum number of particles will be
-%      extracted. The returned particles is a vector with the IDs of "groups" of
-%      triangles.
+%      "particles" that contain connected triangles.
+%      The returned particles is a vector with the IDs of "groups" of triangles.
 
 A = createConnectivityMatrix(TR);
 G = graph(A) ;
 particles = conncomp(G) ;
 
-%% Calculate number of particles
-if isempty(n_particles)
-  n_actual_particles = max(particles) ; % platelets
-else
-  n_actual_particles = n_particles;
-end
+n_actual_particles = max(particles) ; % platelets
 end
 
 function A = createConnectivityMatrix(TR)
@@ -81,15 +74,15 @@ for k=1:n_triangles
 end
 end
 
-function [Packing,geometricInfo] = processParticles(n_actual_particles,bins,TR,ScaleFactor_Distancing,workingDir,STL_filename)
+function [Packing,geometricInfo] = processParticles(n_actual_particles,bins,TR,ScaleFactor_Distancing,workingDir)
 
-dirname = createLocalFolder(workingDir,STL_filename);
+
 Packing = {};
 
 
 for iParticle=1:n_actual_particles
 
-  [TheAxis, TheRadius,TheAxialHeight, center] = processIndividualParticle(iParticle,TR,bins,dirname,ScaleFactor_Distancing);
+  [TheAxis, TheRadius,TheAxialHeight, center] = processIndividualParticle(iParticle,TR,bins,workingDir,ScaleFactor_Distancing);
   Packing.AllTheAxes{iParticle} = TheAxis ;
   Packing.AllTheRadii(iParticle) = TheRadius(1) ;
   Packing.AllTheHeights(iParticle) = TheAxialHeight ;
@@ -104,29 +97,6 @@ end
 
 function A = calculateHexagonalArea(r)
 A = 3/2*sqrt(3)*r^2;
-end
-
-function dirname = createLocalFolder(workingDir,STL_filename)
-% CREATELOCALFOLDER Create a subfolder to store STL files.
-%
-%   DIRNAME = CREATELOCALFOLDER(WORKINGDIR,STL_FILENAME) will create
-%      a folder DIRNAME = WORKINGDIR / PREFIX, where PREFIX is everying but
-%      the file extension of STL_FILENAME.
-%
-%      If DIRNAME already exists, it will be removed before being
-%         recreated.
-
-% TODO: improve path recognition - what if STL_FILENAME is an absolute file?
-% the -4 below is to remove the '.stl' extension
-dirname = fullfile(workingDir,STL_filename(1:end-4));
-cwd = pwd;
-if isfolder(dirname)
-  delete('*');
-  cd(dirname);
-  cd(cwd);
-  rmdir(dirname);
-end
-mkdir(dirname) ;
 end
 
 function [TheAxis, TheRadius,TheAxialHeight,center]  = processIndividualParticle(iParticle,TR,bins,dirname,scale)
@@ -192,6 +162,8 @@ P = (P-xC).*scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Tri2 = triangulation(T2,P) ;
 center = xC(1,:);
 
-stlwrite(Tri2,[dirname,filesep,'SinglePlatelets01_',num2str(iParticle,'%04.0f'),'.stl'])
+thisFilename = fullfile(dirname, ...
+    ['hexagon_',num2str(iParticle,'%04.0f'),'.stl']);
+stlwrite(Tri2,thisFilename)
 end
 
