@@ -68,7 +68,7 @@ classdef STLExtractor < handle
         %      "particles" that contain connected triangles.
         %      The returned particles is a vector with the IDs of "groups" of triangles.
         
-        A = obj.createConnecti  vityMatrix;
+        A = obj.createConnectivityMatrix;
         G = graph(A) ;
         obj.particles = conncomp(G) ;
         
