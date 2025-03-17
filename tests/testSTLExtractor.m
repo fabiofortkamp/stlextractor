@@ -3,22 +3,28 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
     methods (Test)
 
-        % function test_process(testCase)
+        % function test_process_can_identify_number_of_triangles(testCase)
         %     % Specify the input(s) of
         %     % STLExtractor
-        %     filename = "test_stl_files/hex_r25_h5_o0p00_0p00_1p00.stl";
+        %     projectDir = currentProject().RootFolder;
+        %     testFileDir = fullfile(projectDir,"tests","test_stl_files");
+        % 
         %     workingDir = "test_output";
-        %     obj = STLExtractor(filename, workingDir);
         % 
-        %     % Specify the expected output(s) of
-        %     % STLExtractor/process
-        %     [radius, thickness, normal, position] = parseSTLTestFilename(filename);
-        %     expected_l = HexagonalPrism(position,radius,thickness,normal);
         % 
-        %     % Exercise the function obj.process
-        %     actual_l = obj.process();
+        %     % THIS IS FAILING!!!
+        %     nParticles = [48,200];
+        %     for i = nParticles
+        %         filename = fullfile(testFileDir,['particles_',num2str(i),'.stl']);
+        %         e = STLExtractor(filename,workingDir);
+        %         % Exercise the function obj.process
+        %         l = e.process();
         % 
-        %     testCase.verifyEqual(actual_l, expected_l);
+        %         testCase.verifyEqual(numel(l), i);
+        % 
+        %     end
+        % 
+        % 
         % end
     end
 end

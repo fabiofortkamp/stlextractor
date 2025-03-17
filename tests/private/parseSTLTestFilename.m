@@ -68,5 +68,7 @@ end
         
         % Convert to numeric values
         center = [str2double(cx_str), str2double(cy_str), str2double(cz_str)];
+    else
+        center = [0,0,0];
     end
 end
