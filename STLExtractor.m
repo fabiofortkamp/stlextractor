@@ -11,7 +11,7 @@ classdef STLExtractor < handle
 
   properties (Access = private)
     TR
-    particles
+    trianglesInParticle
     nParticles
   end
 
@@ -20,7 +20,7 @@ classdef STLExtractor < handle
       %STLEXTRACTOR Construct an extractor that process a STL file and partitions
       %     into individual STL objects.
       %
-      % ex = STLEXTRACTOR(filename,savedirDir) will instantiate an extractor
+      % ex = STLEXTRACTOR(filename,saveDir) will instantiate an extractor
       %     based on the STL file named 'filename', and will save the resulting
       %     individual STL files of the hexagonal prisms into 'saveDir'
       %
@@ -31,8 +31,9 @@ classdef STLExtractor < handle
     end
 
     function l = process(obj)
-      %PROCESS Run the extraction process and save individual files
-      %   Detailed explanation goes here
+      %PROCESS Run the extraction process and save individual files.
+      %   l = obj.PROCESS() returns a list of HEXAGONALPRISM objects, with each one
+      %     being saved in individual STL files in obj.saveDir
       [Packing,geometricInfo] = obj.AnalyzeSTL;
 
       l = HexagonalPrism.empty;
@@ -70,9 +71,9 @@ classdef STLExtractor < handle
         
         A = obj.createConnectivityMatrix;
         G = graph(A) ;
-        obj.particles = conncomp(G) ;
+        obj.trianglesInParticle = conncomp(G) ;
         
-        obj.nParticles = max(obj.particles) ; % platelets
+        obj.nParticles = max(obj.trianglesInParticle) ; % platelets
         end
 
         function A = createConnectivityMatrix(obj)
@@ -130,8 +131,8 @@ classdef STLExtractor < handle
 
         function [TheAxis, TheRadius,TheAxialHeight,center]  = processIndividualParticle(obj,iParticle)
         
-        % find the triangles that were grouped into given iParticle
-        particleTriangles = find(obj.particles==iParticle) ;
+        % find the triangles that were grouped into given particle whose index is iParticle
+        particleTriangles = find(obj.trianglesInParticle==iParticle) ;
         
         % build a connectivity list for this particle
         particleConnectivityList = 0.*obj.TR.ConnectivityList ;
