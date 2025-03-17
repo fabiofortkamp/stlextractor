@@ -49,7 +49,7 @@ classdef STLExtractor < handle
 
   methods (Access = private)
       function [Packing,geometricInfo] = AnalyzeSTL(obj)
-        % ANALYZESTL Proceess the STL file to calculate geometric parameters and
+        % ANALYZESTL Process the STL file to calculate geometric parameters and
         %   produce individual files.
         
         obj.TR = stlread(obj.baseFilename) ;
