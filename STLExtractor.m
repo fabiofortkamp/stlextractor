@@ -13,6 +13,8 @@ classdef STLExtractor < handle
     TR
     trianglesInParticle
     nParticles
+    colormap
+    fig
   end
 
   methods
@@ -34,11 +36,13 @@ classdef STLExtractor < handle
       %PROCESS Run the extraction process and save individual files.
       %   l = obj.PROCESS() returns a list of HEXAGONALPRISM objects, with each one
       %     being saved in individual STL files in obj.saveDir
+            obj.fig = figure("Name","blah") ;
+      hold on;
       [Packing,geometricInfo] = obj.AnalyzeSTL;
 
       l = HexagonalPrism.empty;
-      figure ;
-        hold on;
+
+
       for iParticle = 1:obj.nParticles
         position = geometricInfo(iParticle).center;
         radius = Packing.AllTheRadii(iParticle);
@@ -47,7 +51,9 @@ classdef STLExtractor < handle
         l(iParticle) = HexagonalPrism(position, radius, thickness,normal);
       end
 
-
+              axis equal
+                light('position',[2,2,2])
+                view(30,30) ;
 
     end
   end
@@ -78,6 +84,7 @@ classdef STLExtractor < handle
         obj.trianglesInParticle = conncomp(G) ;
         
         obj.nParticles = max(obj.trianglesInParticle) ; % platelets
+        obj.colormap  = jet(obj.nParticles);
         end
 
         function A = createConnectivityMatrix(obj)
@@ -135,7 +142,9 @@ classdef STLExtractor < handle
 
         function [TheAxis, TheRadius,TheAxialHeight,center]  = processIndividualParticle(obj,iParticle)
         
-        COLS = jet(obj.nParticles); 
+ 
+        figure(obj.fig);
+        hold on
         % find the triangles that were grouped into given particle whose index is iParticle
         particleTriangles = find(obj.trianglesInParticle==iParticle) ;
         
@@ -196,22 +205,20 @@ classdef STLExtractor < handle
 
         % PLOTTING
         if all(-P(:,3)>-8)
-            trisurf(T2,P(:,1),P(:,2),P(:,3),'linestyle','none','facecolor',COLS(iParticle,:),'facealpha',.6) ;
+            trisurf(T2,P(:,1),P(:,2),P(:,3),'linestyle','none','facecolor',obj.colormap(iParticle,:),'facealpha',.6) ;
         end
         
         Tri2 = triangulation(T2,P) ;
         center = xC(1,:);
         xC = mean(P,1) ;
-    CenterToVertex = P(1,:)-xC ;
-TheAxis2 = CenterToVertex - dot(CenterToVertex,TheAxis).*TheAxis ;
-TheAxis2 = TheAxis2./norm(TheAxis2) ;
-TheAxis3 = cross(TheAxis,TheAxis2) ;
+        CenterToVertex = P(1,:)-xC ;
+        TheAxis2 = CenterToVertex - dot(CenterToVertex,TheAxis).*TheAxis ;
+        TheAxis2 = TheAxis2./norm(TheAxis2) ;
+        TheAxis3 = cross(TheAxis,TheAxis2) ;
 
-                line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
+        line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
         line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
-              axis equal
-                light('position',[2,2,2])
-                view(30,30) ;
+
         
         thisFilename = fullfile(obj.saveDir, ...
             ['hexagon_',num2str(iParticle,'%04.0f'),'.stl']);
