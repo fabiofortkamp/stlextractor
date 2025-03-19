@@ -32,6 +32,8 @@ classdef STLExtractor < handle
 
       obj.baseFilename = filename;
       obj.saveDir = saveDir;
+      % Create figue for holding the packing plot
+      obj.packingFigure = figure;
     end
 
     function l = process(obj)
@@ -39,12 +41,11 @@ classdef STLExtractor < handle
       %   l = obj.PROCESS() returns a list of HEXAGONALPRISM objects, with each one
       %     being saved in individual STL files in obj.saveDir
 
-      % Create figue for holding the packing plot
-      obj.packingFigure = figure;
+
+
       [Packing,geometricInfo] = obj.AnalyzeSTL;
 
       l = HexagonalPrism.empty;
-
 
       for iParticle = 1:obj.nParticles
         position = geometricInfo(iParticle).center;
