@@ -15,6 +15,7 @@ classdef STLExtractor < handle
     nParticles
     packingFigure
     colormap
+    particleTypes
   end
 
   methods
@@ -86,6 +87,7 @@ classdef STLExtractor < handle
 
       obj.nParticles = max(obj.trianglesInParticle) ; % platelets
       obj.colormap  = jet(obj.nParticles);
+      obj.particleTypes = ones(1,obj.nParticles);
     end
 
     function A = createConnectivityMatrix(obj)
@@ -206,7 +208,12 @@ classdef STLExtractor < handle
 
       % PLOTTING
       if all(-P(:,3)>-8)
-        trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',obj.colormap(iParticle,:),'linestyle','none','facealpha',.6) ;
+
+        % Compute color associated with this particle
+        % for now, the array particleTypes has only ones, meaning all particles
+        % will have the same color
+        c = obj.colormap(obj.particleTypes(iParticle),:);
+        trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
       end
 
       Tri2 = triangulation(T2,P) ;
