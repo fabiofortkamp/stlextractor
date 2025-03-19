@@ -204,7 +204,7 @@ classdef STLExtractor < handle
 
       % PLOTTING
       if all(-P(:,3)>-8)
-        trisurf(T2,P(:,1),P(:,2),P(:,3),'linestyle','none','facealpha',.6) ;
+        trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor','cyan','linestyle','none','facealpha',.6) ;
       end
 
       Tri2 = triangulation(T2,P) ;
