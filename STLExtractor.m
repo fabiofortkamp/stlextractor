@@ -16,6 +16,7 @@ classdef STLExtractor < handle
     packingFigure
     colormap
     particleTypes
+    particleGeometry
   end
 
   methods
@@ -88,6 +89,7 @@ classdef STLExtractor < handle
       obj.nParticles = max(obj.trianglesInParticle) ; % platelets
       obj.colormap  = jet(obj.nParticles);
       obj.particleTypes = ones(1,obj.nParticles);
+      obj.particleGeometry = GeometricType.empty;
     end
 
     function A = createConnectivityMatrix(obj)
@@ -199,6 +201,31 @@ classdef STLExtractor < handle
 
       DistFromCenter = sqrt(sum((P-xC).^2,2)) ;
       TheRadius = sqrt(DistFromCenter.^2-(TheAxialHeight/2)^2) ;
+
+      % compute the GeometricType associated with this particle
+      gt = GeometricType(TheRadius(1),TheAxialHeight);
+      obj.particleGeometry(iParticle) = gt;
+
+      % starting from the second particle, we should compare its 
+      % geometric type with the others
+      if iParticle > 1
+        
+        % this is terribly inefficient, but I have yet to find a way
+        % to properly overload the comparison operators
+        for j = 1:iParticle-1
+            if gt == obj.particleGeometry(j)
+                % we have found an "identical" particle type,
+                % so we assign the same type and exit out of the loop
+                obj.particleTypes(iParticle) = obj.particleTypes(j);
+                break
+            else
+                % in this case, change the type
+                obj.particleTypes(iParticle) = max(obj.particleTypes) + 1;
+                break
+            end
+        end
+      end
+      
 
       TheAxis = TheAxis./TheAxialHeight ;
 
