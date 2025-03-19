@@ -10,7 +10,7 @@ classdef STLExtractor < handle
   end
 
   properties (Access = private)
-    triangulation
+    globalTriangulation 
     trianglesInParticle
     nParticles
     packingFigure
@@ -65,7 +65,7 @@ classdef STLExtractor < handle
       % ANALYZESTL Process the STL file to calculate geometric parameters and
       %   produce individual files.
 
-      obj.triangulation = stlread(obj.baseFilename) ;
+      obj.globalTriangulation = stlread(obj.baseFilename) ;
 
       obj.extractIndividualParticles;
 
@@ -108,14 +108,14 @@ classdef STLExtractor < handle
       %         points whose IDS are i and j, and 0 otherwise.
 
 
-      n_points = size(obj.triangulation.Points,1) ; % points
-      n_triangles = size(obj.triangulation.ConnectivityList,1) ; % triangles
+      n_points = size(obj.globalTriangulation.Points,1) ; % points
+      n_triangles = size(obj.globalTriangulation.ConnectivityList,1) ; % triangles
 
       A = zeros(n_points,n_points) ;
       for k=1:n_triangles
-        A(obj.triangulation.ConnectivityList(k,1),obj.triangulation.ConnectivityList(k,2)) = 1 ;
-        A(obj.triangulation.ConnectivityList(k,2),obj.triangulation.ConnectivityList(k,3)) = 1 ;
-        A(obj.triangulation.ConnectivityList(k,3),obj.triangulation.ConnectivityList(k,1)) = 1 ;
+        A(obj.globalTriangulation.ConnectivityList(k,1),obj.globalTriangulation.ConnectivityList(k,2)) = 1 ;
+        A(obj.globalTriangulation.ConnectivityList(k,2),obj.globalTriangulation.ConnectivityList(k,3)) = 1 ;
+        A(obj.globalTriangulation.ConnectivityList(k,3),obj.globalTriangulation.ConnectivityList(k,1)) = 1 ;
 
       end
     end
@@ -152,21 +152,21 @@ classdef STLExtractor < handle
       particleTriangles = find(obj.trianglesInParticle==iParticle) ;
 
       % build a connectivity list for this particle
-      particleConnectivityList = 0.*obj.triangulation.ConnectivityList ;
+      particleConnectivityList = 0.*obj.globalTriangulation.ConnectivityList ;
       nTriangles = numel(particleTriangles);
       for i=1:nTriangles
-        particleConnectivityList = particleConnectivityList | (obj.triangulation.ConnectivityList==particleTriangles(i)) ;
+        particleConnectivityList = particleConnectivityList | (obj.globalTriangulation.ConnectivityList==particleTriangles(i)) ;
       end
       particleConnectivityList = particleConnectivityList(:,1) & particleConnectivityList(:,1) & particleConnectivityList(:,1) ;
       particleConnectivityList = find(particleConnectivityList) ;
 
-      T = obj.triangulation.ConnectivityList(particleConnectivityList,:) ;
+      T = obj.globalTriangulation.ConnectivityList(particleConnectivityList,:) ;
       T2 = 0.*T ;
       for i=1:nTriangles
         T2(T==particleTriangles(i)) = i ;
       end
 
-      P = obj.triangulation.Points(particleTriangles,:) ;
+      P = obj.globalTriangulation.Points(particleTriangles,:) ;
 
       % TODO: Check with Andrea if this is where the center is calculated
       xC = repmat(mean(P,1),size(P,1),1) ;
