@@ -67,6 +67,13 @@ classdef STLExtractor < handle
     
       function f = initializeFigure(obj)
       obj.packingFigure = figure;
+      
+      % change width and height
+      % from: https://se.mathworks.com/help/releases/R2024b/matlab/ref/figure.html#bvjs6cb-3
+
+      f.Units = "centimeters";
+      f.Position(3:4) = [16,9];
+
       axis equal
       light('position',[2,2,2])
       view(30,30) ;
@@ -260,6 +267,7 @@ classdef STLExtractor < handle
       TheAxis2 = TheAxis2./norm(TheAxis2) ;
       TheAxis3 = cross(TheAxis,TheAxis2) ;
 
+      % Finish filling up the hexagons
       line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
       line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
 
