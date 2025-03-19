@@ -33,7 +33,9 @@ classdef STLExtractor < handle
       obj.baseFilename = filename;
       obj.saveDir = saveDir;
       % Create figue for holding the packing plot
-      obj.packingFigure = figure;
+      
+      obj.initializeFigure;
+
     end
 
     function l = process(obj)
@@ -55,14 +57,23 @@ classdef STLExtractor < handle
         l(iParticle) = HexagonalPrism(position, radius, thickness,normal);
       end
 
-      axis equal
-      light('position',[2,2,2])
-      view(30,30) ;
+
+
 
     end
   end
 
   methods (Access = private)
+    
+      function f = initializeFigure(obj)
+      obj.packingFigure = figure;
+      axis equal
+      light('position',[2,2,2])
+      view(30,30) ;
+      xlabel("x");
+      ylabel("y");
+      zlabel("z");
+      end
     function [Packing,geometricInfo] = AnalyzeSTL(obj)
       % ANALYZESTL Process the STL file to calculate geometric parameters and
       %   produce individual files.
