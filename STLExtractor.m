@@ -3,13 +3,18 @@ classdef STLExtractor < handle
   %   Objects of this class can process an STL file and retrieve individual hexagonal
   %      prims. The goal is to extract individual "particles" from a "packing".
 
+
   properties (SetAccess = private)
     baseFilename string {mustBeFile}
     saveDir string {mustBeFolder}
     scale double {mustBePositive} = 0.95;
+    shouldPlot (1,1) logical
   end
 
+
+
   properties (Access = private)
+    
     globalTriangulation 
     trianglesInParticle
     nParticles
@@ -20,7 +25,7 @@ classdef STLExtractor < handle
   end
 
   methods
-    function obj = STLExtractor(filename,saveDir)
+    function obj = STLExtractor(filename,saveDir,shouldPlot)
       %STLEXTRACTOR Construct an extractor that process a STL file and partitions
       %     into individual STL objects.
       %
@@ -29,12 +34,20 @@ classdef STLExtractor < handle
       %     individual STL files of the hexagonal prisms into 'saveDir'
       %
       % See also HEXAGONALPRISM
+      arguments
+        filename
+        saveDir
+        shouldPlot (1,1) logical = false
+      end
 
       obj.baseFilename = filename;
       obj.saveDir = saveDir;
       % Create figue for holding the packing plot
       
-      obj.initializeFigure;
+      obj.shouldPlot = shouldPlot;
+      if obj.shouldPlot
+        obj.initializeFigure;
+      end
 
     end
 
@@ -166,9 +179,10 @@ classdef STLExtractor < handle
 
     function [TheAxis, TheRadius,TheAxialHeight,center]  = processIndividualParticle(obj,iParticle)
 
-
+        if obj.shouldPlot
       figure(obj.packingFigure);
       hold on
+        end
       % find the triangles that were grouped into given particle whose index is iParticle
       particleTriangles = find(obj.trianglesInParticle==iParticle) ;
 
@@ -247,18 +261,15 @@ classdef STLExtractor < handle
 
       TheAxis = TheAxis./TheAxialHeight ;
 
-      TheAxis = sign(dot(TheAxis,[0,0,1])).*TheAxis ;
+      zProjection = dot(TheAxis,[0,0,1]);
+      upSign = sign(zProjection);
 
-      P = (P-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      % PLOTTING
-      if all(-P(:,3)>-8)
-
-        % Compute color associated with this particle
-        c = obj.colormap(obj.particleTypes(iParticle),:);
-        trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
+      if upSign ~= 0
+        TheAxis = upSign.*TheAxis ;
       end
 
+
+        P = (P-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       Tri2 = triangulation(T2,P) ;
       center = xC(1,:);
       xC = mean(P,1) ;
@@ -267,10 +278,20 @@ classdef STLExtractor < handle
       TheAxis2 = TheAxis2./norm(TheAxis2) ;
       TheAxis3 = cross(TheAxis,TheAxis2) ;
 
-      % Finish filling up the hexagons
-      line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
-      line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
-
+            
+      if obj.shouldPlot
+          % PLOTTING
+          if all(-P(:,3)>-8)
+    
+            % Compute color associated with this particle
+            c = obj.colormap(obj.particleTypes(iParticle),:);
+            trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
+          end
+    
+          % Finish filling up the hexagons
+          line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
+          line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
+      end
 
       thisFilename = fullfile(obj.saveDir, ...
         ['hexagon_',num2str(iParticle,'%04.0f'),'.stl']);
