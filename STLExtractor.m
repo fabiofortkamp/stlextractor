@@ -14,6 +14,7 @@ classdef STLExtractor < handle
     trianglesInParticle
     nParticles
     packingFigure
+    colormap
   end
 
   methods
@@ -84,6 +85,7 @@ classdef STLExtractor < handle
       obj.trianglesInParticle = conncomp(G) ;
 
       obj.nParticles = max(obj.trianglesInParticle) ; % platelets
+      obj.colormap  = jet(obj.nParticles);
     end
 
     function A = createConnectivityMatrix(obj)
@@ -204,7 +206,7 @@ classdef STLExtractor < handle
 
       % PLOTTING
       if all(-P(:,3)>-8)
-        trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor','cyan','linestyle','none','facealpha',.6) ;
+        trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',obj.colormap(iParticle,:),'linestyle','none','facealpha',.6) ;
       end
 
       Tri2 = triangulation(T2,P) ;
