@@ -25,7 +25,7 @@ classdef STLExtractor < handle
   end
 
   methods
-    function obj = STLExtractor(filename,saveDir,shouldPlot)
+    function obj = STLExtractor(filename,saveDir,options)
       %STLEXTRACTOR Construct an extractor that process a STL file and partitions
       %     into individual STL objects.
       %
@@ -37,14 +37,14 @@ classdef STLExtractor < handle
       arguments
         filename
         saveDir
-        shouldPlot (1,1) logical = false
+        options.ShouldPlot (1,1) logical = false
       end
 
       obj.baseFilename = filename;
       obj.saveDir = saveDir;
       % Create figue for holding the packing plot
       
-      obj.shouldPlot = shouldPlot;
+      obj.shouldPlot = options.ShouldPlot;
       if obj.shouldPlot
         obj.initializeFigure;
       end
