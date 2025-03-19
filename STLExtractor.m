@@ -170,7 +170,6 @@ classdef STLExtractor < handle
 
       P = obj.globalTriangulation.Points(particleTriangles,:) ;
 
-      % TODO: Check with Andrea if this is where the center is calculated
       xC = repmat(mean(P,1),size(P,1),1) ;
       TheEdges = [T2(:,1),T2(:,2);T2(:,2),T2(:,3);T2(:,3),T2(:,1)] ;
       TheDx = P(TheEdges(:,2),1)-P(TheEdges(:,1),1) ;
@@ -237,8 +236,6 @@ classdef STLExtractor < handle
       if all(-P(:,3)>-8)
 
         % Compute color associated with this particle
-        % for now, the array particleTypes has only ones, meaning all particles
-        % will have the same color
         c = obj.colormap(obj.particleTypes(iParticle),:);
         trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
       end
