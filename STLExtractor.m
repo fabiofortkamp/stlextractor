@@ -115,6 +115,12 @@ classdef STLExtractor < handle
       %      The returned particles is a vector with the IDs of "groups" of triangles.
 
       A = obj.createConnectivityMatrix;
+
+      % correct cases where the order of edges are incorrect between 
+      % adjacent triangles
+      A = A + A.';
+      A = A ~= 0;
+
       G = graph(A) ;
       obj.trianglesInParticle = conncomp(G) ;
 
