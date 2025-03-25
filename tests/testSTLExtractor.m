@@ -29,5 +29,38 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
 
         end
+
+        function test_process_can_parse_one_triangle(testCase)
+            % Specify the input(s) of
+            % STLExtractor
+            projectDir = currentProject().RootFolder;
+            testFileDir = fullfile(projectDir,"tests","test_stl_files");
+
+            workingDir = "test_output";    
+            filename = fullfile(testFileDir,['particle_r_1_t_1_c_0_0_0_n_0_0_1','.stl']);
+            e = STLExtractor(filename,workingDir);
+            % Exercise the function obj.process
+            l = e.process();
+
+            testCase.verifyEqual(numel(l), 1);
+
+            prism = l(1);
+
+            tokens = regexp(filename,'particle_r_(\d)_t_(\d)_c_(\d)_(\d)_(\d)_n_(\d)_(\d)_(\d)*','tokens');
+            tokens = tokens{1};
+            radius = str2double(tokens{1});
+            thickness = str2double(tokens{2});
+
+            center = [str2double(tokens{3}),str2double(tokens{4}),str2double(tokens{5})];
+            normal = [str2double(tokens{6}),str2double(tokens{7}),str2double(tokens{8})];
+            testCase.verifyEqual(prism.radius,radius);
+            testCase.verifyEqual(prism.thickness,thickness);
+            testCase.verifyEqual(prism.normal,normal);
+            testCase.verifyEqual(prism.position,center);
+
+            
+
+
+        end
     end
 end
