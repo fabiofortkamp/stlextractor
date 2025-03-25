@@ -14,8 +14,8 @@ classdef STLExtractor < handle
 
 
   properties (Access = private)
-    
-    globalTriangulation 
+
+    globalTriangulation
     trianglesInParticle
     nParticles
     packingFigure
@@ -43,7 +43,7 @@ classdef STLExtractor < handle
       obj.baseFilename = filename;
       obj.saveDir = saveDir;
       % Create figue for holding the packing plot
-      
+
       obj.shouldPlot = options.ShouldPlot;
       if obj.shouldPlot
         obj.initializeFigure;
@@ -77,10 +77,10 @@ classdef STLExtractor < handle
   end
 
   methods (Access = private)
-    
-      function f = initializeFigure(obj)
+
+    function f = initializeFigure(obj)
       obj.packingFigure = figure;
-      
+
       % change width and height
       % from: https://se.mathworks.com/help/releases/R2024b/matlab/ref/figure.html#bvjs6cb-3
 
@@ -93,7 +93,7 @@ classdef STLExtractor < handle
       xlabel("x");
       ylabel("y");
       zlabel("z");
-      end
+    end
     function [Packing,geometricInfo] = AnalyzeSTL(obj)
       % ANALYZESTL Process the STL file to calculate geometric parameters and
       %   produce individual files.
@@ -115,6 +115,12 @@ classdef STLExtractor < handle
       %      The returned particles is a vector with the IDs of "groups" of triangles.
 
       A = obj.createConnectivityMatrix;
+
+      % correct cases where the order of edges are incorrect between
+      % adjacent triangles
+      A = A + A.';
+      A = A ~= 0;
+
       G = graph(A) ;
       obj.trianglesInParticle = conncomp(G) ;
 
@@ -147,9 +153,10 @@ classdef STLExtractor < handle
 
       A = zeros(n_points,n_points) ;
       for k=1:n_triangles
-        A(obj.globalTriangulation.ConnectivityList(k,1),obj.globalTriangulation.ConnectivityList(k,2)) = 1 ;
-        A(obj.globalTriangulation.ConnectivityList(k,2),obj.globalTriangulation.ConnectivityList(k,3)) = 1 ;
-        A(obj.globalTriangulation.ConnectivityList(k,3),obj.globalTriangulation.ConnectivityList(k,1)) = 1 ;
+        vertices = obj.globalTriangulation.ConnectivityList(k,:);
+        A(vertices(1),vertices(2)) = 1 ;
+        A(vertices(2),vertices(3)) = 1 ;
+        A(vertices(3),vertices(1)) = 1 ;
 
       end
     end
@@ -179,10 +186,10 @@ classdef STLExtractor < handle
 
     function [TheAxis, TheRadius,TheAxialHeight,center]  = processIndividualParticle(obj,iParticle)
 
-        if obj.shouldPlot
-      figure(obj.packingFigure);
-      hold on
-        end
+      if obj.shouldPlot
+        figure(obj.packingFigure);
+        hold on
+      end
       % find the triangles that were grouped into given particle whose index is iParticle
       particleTriangles = find(obj.trianglesInParticle==iParticle) ;
 
@@ -238,26 +245,26 @@ classdef STLExtractor < handle
       gt = GeometricType(TheRadius(1),TheAxialHeight);
       obj.particleGeometry(iParticle) = gt;
 
-      % starting from the second particle, we should compare its 
+      % starting from the second particle, we should compare its
       % geometric type with the others
       if iParticle > 1
-        
+
         % this is terribly inefficient, but I have yet to find a way
         % to properly overload the comparison operators
         for j = 1:iParticle-1
-            if gt == obj.particleGeometry(j)
-                % we have found an "identical" particle type,
-                % so we assign the same type and exit out of the loop
-                obj.particleTypes(iParticle) = obj.particleTypes(j);
-                break
-            else
-                % in this case, change the type
-                obj.particleTypes(iParticle) = max(obj.particleTypes) + 1;
-                break
-            end
+          if gt == obj.particleGeometry(j)
+            % we have found an "identical" particle type,
+            % so we assign the same type and exit out of the loop
+            obj.particleTypes(iParticle) = obj.particleTypes(j);
+            break
+          else
+            % in this case, change the type
+            obj.particleTypes(iParticle) = max(obj.particleTypes) + 1;
+            break
+          end
         end
       end
-      
+
 
       TheAxis = TheAxis./TheAxialHeight ;
 
@@ -269,7 +276,7 @@ classdef STLExtractor < handle
       end
 
 
-        P = (P-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      P = (P-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       Tri2 = triangulation(T2,P) ;
       center = xC(1,:);
       xC = mean(P,1) ;
@@ -278,19 +285,19 @@ classdef STLExtractor < handle
       TheAxis2 = TheAxis2./norm(TheAxis2) ;
       TheAxis3 = cross(TheAxis,TheAxis2) ;
 
-            
+
       if obj.shouldPlot
-          % PLOTTING
-          if all(-P(:,3)>-8)
-    
-            % Compute color associated with this particle
-            c = obj.colormap(obj.particleTypes(iParticle),:);
-            trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
-          end
-    
-          % Finish filling up the hexagons
-          line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
-          line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
+        % PLOTTING
+        if all(-P(:,3)>-8)
+
+          % Compute color associated with this particle
+          c = obj.colormap(obj.particleTypes(iParticle),:);
+          trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
+        end
+
+        % Finish filling up the hexagons
+        line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
+        line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
       end
 
       thisFilename = fullfile(obj.saveDir, ...
