@@ -17,6 +17,7 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
 
             for i = nParticles
+                
                 filename = fullfile(testFileDir,['particles_',num2str(i),'.stl']);
                 e = STLExtractor(filename,workingDir);
                 % Exercise the function obj.process
