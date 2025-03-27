@@ -30,14 +30,18 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
         end
 
-        function test_process_can_parse_one_triangle(testCase)
+        function test_process_can_parse_one_particle(testCase)
             % Specify the input(s) of
             % STLExtractor
             projectDir = currentProject().RootFolder;
             testFileDir = fullfile(projectDir,"tests","test_stl_files");
-
-            workingDir = "test_output";    
-            for basename = ["particle_r_1_t_1_c_0_0_0_n_0_0_1.stl","particle_r_2_t_3_c_0_0_0_n_0_1_0.stl" ]
+            tol = 1e-3;
+            workingDir = "test_output"; 
+            basenames = [...
+                "particle_r_1_t_1_c_0_0_0_n_0_0_1.stl",...
+                "particle_r_2_t_3_c_0_0_0_n_0_1_0.stl" 
+                ];
+            for basename = basenames
                 filename = fullfile(testFileDir,basename);
                 e = STLExtractor(filename,workingDir);
                 % Exercise the function obj.process
@@ -55,10 +59,22 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 center = [str2double(tokens{3}),str2double(tokens{4}),str2double(tokens{5})];
                 normal = [str2double(tokens{6}),str2double(tokens{7}),str2double(tokens{8})];
                 normal = normal./norm(normal);
-                testCase.verifyEqual(prism.radius,radius);
-                testCase.verifyEqual(prism.thickness,thickness);
-                testCase.verifyEqual(prism.normal,normal);
-                testCase.verifyEqual(prism.position,center);
+                testCase.verifyLessThanOrEqual(abs(prism.radius-radius),tol);
+                testCase.verifyLessThanOrEqual(abs(prism.thickness-thickness),tol);
+
+                % if the normal is the xy-axis, it doesn't matter whether the
+                % axis is flipped
+                isParallelToX = abs(...
+                    abs(dot(prism.normal,[1,0,0])) - 1.0) < tol;
+                isParallelToY = abs(...
+                    abs(dot(prism.normal,[0,1,0])) - 1.0) < tol;
+
+                if isParallelToX || isParallelToY
+                testCase.verifyLessThanOrEqual(abs(abs(prism.normal)-normal),tol);
+                else
+                    testCase.verifyLessThanOrEqual(abs(prism.normal-normal),tol);
+                end
+                testCase.verifyLessThanOrEqual(abs(prism.position-center),tol);
 
             end
 

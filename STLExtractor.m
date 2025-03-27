@@ -65,7 +65,7 @@ classdef STLExtractor < handle
       for iParticle = 1:obj.nParticles
         position = geometricInfo(iParticle).center;
         radius = Packing.AllTheRadii(iParticle);
-        thickness = Packing.AllTheRadii(iParticle);
+        thickness = Packing.AllTheHeights(iParticle);
         normal = geometricInfo(iParticle).axes;
         l(iParticle) = HexagonalPrism(position, radius, thickness,normal);
       end
