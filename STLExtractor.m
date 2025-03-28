@@ -67,7 +67,8 @@ classdef STLExtractor < handle
         radius = Packing.AllTheRadii(iParticle);
         thickness = Packing.AllTheHeights(iParticle);
         normal = geometricInfo(iParticle).axes;
-        l(iParticle) = HexagonalPrism(position, radius, thickness,normal);
+        faceRotation = Packing.AllTheAxes2{iParticle};
+        l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation);
       end
 
 
@@ -169,8 +170,9 @@ classdef STLExtractor < handle
 
       for iParticle=1:obj.nParticles
 
-        [TheAxis, TheRadius,TheAxialHeight, center] = obj.processIndividualParticle(iParticle);
+        [TheAxis, TheRadius,TheAxialHeight, center,TheAxis2] = obj.processIndividualParticle(iParticle);
         Packing.AllTheAxes{iParticle} = TheAxis ;
+        Packing.AllTheAxes2{iParticle} = TheAxis2 ;
         Packing.AllTheRadii(iParticle) = TheRadius(1) ;
         Packing.AllTheHeights(iParticle) = TheAxialHeight ;
 
@@ -184,7 +186,7 @@ classdef STLExtractor < handle
 
 
 
-    function [TheAxis, TheRadius,TheAxialHeight,center]  = processIndividualParticle(obj,iParticle)
+    function [TheAxis, TheRadius,TheAxialHeight,center, TheAxis2]  = processIndividualParticle(obj,iParticle)
 
       if obj.shouldPlot
         figure(obj.packingFigure);
