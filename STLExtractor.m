@@ -9,6 +9,7 @@ classdef STLExtractor < handle
     saveDir string {mustBeFolder}
     scale double {mustBePositive} = 0.95;
     shouldPlot (1,1) logical
+    shouldSave (1,1) logical
   end
 
 
@@ -38,6 +39,7 @@ classdef STLExtractor < handle
         filename
         saveDir
         options.ShouldPlot (1,1) logical = false
+        options.ShouldSave (1,1) logical = false
       end
 
       obj.baseFilename = filename;
@@ -45,6 +47,7 @@ classdef STLExtractor < handle
       % Create figue for holding the packing plot
 
       obj.shouldPlot = options.ShouldPlot;
+      obj.shouldSave = options.ShouldSave;
       if obj.shouldPlot
         obj.initializeFigure;
       end
@@ -302,9 +305,11 @@ classdef STLExtractor < handle
         line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
       end
 
-      thisFilename = fullfile(obj.saveDir, ...
-        ['hexagon_',num2str(iParticle,'%04.0f'),'.stl']);
-      stlwrite(Tri2,thisFilename)
+      if obj.shouldSave
+        thisFilename = fullfile(obj.saveDir, ...
+          ['hexagon_',num2str(iParticle,'%04.0f'),'.stl']);
+        stlwrite(Tri2,thisFilename)
+      end
     end
 
   end
