@@ -296,13 +296,14 @@ classdef STLExtractor < handle
         if all(-P(:,3)>-8)
 
           % Compute color associated with this particle
-          c = obj.colormap(obj.particleTypes(iParticle),:);
-          trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',.6) ;
+          %c = obj.colormap(obj.particleTypes(iParticle),:);
+          c = ColorFromHorPsiTheta01(TheAxis(1),TheAxis(2),-TheAxis(3));
+          trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',1) ;
         end
 
         % Finish filling up the hexagons
-        line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
-        line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
+        %line(xC(1)+[0,1].*TheAxis2(1),xC(2)+[0,1].*TheAxis2(2),xC(3)+[0,1].*TheAxis2(3))
+        %line(xC(1)+[0,1].*TheAxis3(1),xC(2)+[0,1].*TheAxis3(2),xC(3)+[0,1].*TheAxis3(3))
       end
 
       if obj.shouldSave
