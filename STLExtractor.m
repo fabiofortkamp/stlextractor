@@ -78,6 +78,36 @@ classdef STLExtractor < handle
 
 
     end
+
+    function f = plotSubsection(obj,xlims,ylims,zlims)
+      f = figure;
+
+      % change width and height
+      % from: https://se.mathworks.com/help/releases/R2024b/matlab/ref/figure.html#bvjs6cb-3
+
+      f.Units = "centimeters";
+      f.Position(3:4) = [16,9];
+
+      axis equal
+      light('position',[2,2,2])
+      view(30,30) ;
+      xlabel("x");
+      ylabel("y");
+      zlabel("z");
+
+      hold on 
+
+      % TODO: calculate iParticles
+      for i=iParticles
+
+          % calculate T2,P,TheAxis for each particle
+          c = ColorFromHorPsiTheta01(TheAxis(1),TheAxis(2),-TheAxis(3));
+          trisurf(T2,P(:,1),P(:,2),P(:,3),'FaceColor',c,'linestyle','none','facealpha',1) ;
+
+
+      end
+      hold off
+    end
   end
 
   methods (Access = private)
