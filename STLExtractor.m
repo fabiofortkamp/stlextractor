@@ -195,6 +195,7 @@ classdef STLExtractor < handle
         figure(obj.packingFigure);
         hold on
       end
+      
       % find the triangles that were grouped into given particle whose index is iParticle
       particleTriangles = find(obj.trianglesInParticle==iParticle) ;
 
