@@ -8,9 +8,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
     methods (Test)
 
         function test_process_can_identify_number_of_triangles(testCase,nParticles)
-            % Specify the input(s) of
-            % STLExtractor
-            projectDir = currentProject().RootFolder;
             testFileDir = fullfile(projectDir,"tests","test_stl_files");
 
             workingDir = "test_output";
@@ -20,7 +17,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 
                 filename = fullfile(testFileDir,['particles_',num2str(i),'.stl']);
                 e = STLExtractor(filename,workingDir);
-                % Exercise the function obj.process
                 l = e.process();
 
                 testCase.verifyEqual(numel(l), i);
@@ -31,9 +27,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
         end
 
         function test_process_can_parse_one_particle(testCase)
-            % Specify the input(s) of
-            % STLExtractor
-            projectDir = currentProject().RootFolder;
             testFileDir = fullfile(projectDir,"tests","test_stl_files");
             tol = 1e-3;
             workingDir = "test_output"; 

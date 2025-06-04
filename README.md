@@ -18,3 +18,7 @@ in simulation software for instance.
 
 See an example [Live Script](./docs/tutorials/Tutorial1_Extract.mlx) for examples of using
 the package.
+
+## Testing
+
+Run `runtests("tests")` in the MATLAB Command Window to run the test suite.
