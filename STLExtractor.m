@@ -15,10 +15,18 @@ classdef STLExtractor < handle
 
 
   properties (Access = private)
-
-    globalTriangulation
-    trianglesInParticle
-    nParticles
+    nParticles % number of individual particles recognized from the input STL file
+    pointsInParticle    % vector of particle indexes; the i-th element is the particle
+                        % index of the i-th point extracted from the input STL file
+    globalTriangulation % global triangulation objected extracted from the input STL
+                        % This object has the following fields:   
+                        %   - Points: a matrix where each row is the coordinate 
+                        %       vector of a vertex        
+                        %   - ConnectivityList: a matrix where:
+                        %       - Each element is a vertex ID;
+                        %       - Each row represents a triangle or tetrahedron in the
+                        %         triangulation;
+                        %       - Row numbers of are a triangle or tetrahedron IDs
     packingFigure
     colormap
     particleTypes
@@ -44,7 +52,7 @@ classdef STLExtractor < handle
 
       obj.baseFilename = filename;
       obj.saveDir = saveDir;
-      % Create figue for holding the packing plot
+
 
       obj.shouldPlot = options.ShouldPlot;
       obj.shouldSave = options.ShouldSave;
@@ -58,8 +66,6 @@ classdef STLExtractor < handle
       %PROCESS Run the extraction process and save individual files.
       %   l = obj.PROCESS() returns a list of HEXAGONALPRISM objects, with each one
       %     being saved in individual STL files in obj.saveDir
-
-
 
       [Packing,geometricInfo] = obj.AnalyzeSTL;
 
@@ -126,9 +132,9 @@ classdef STLExtractor < handle
       A = A ~= 0;
 
       G = graph(A) ;
-      obj.trianglesInParticle = conncomp(G) ;
+      obj.pointsInParticle = conncomp(G) ;
 
-      obj.nParticles = max(obj.trianglesInParticle) ; % platelets
+      obj.nParticles = max(obj.pointsInParticle);
       obj.colormap  = jet(obj.nParticles);
       obj.particleTypes = ones(1,obj.nParticles);
       obj.particleGeometry = GeometricType.empty;
@@ -137,17 +143,7 @@ classdef STLExtractor < handle
     function A = createConnectivityMatrix(obj)
       % CREATECONNECTIVITYMATRIX Parse triangulation matrix and connect the dots.
       %
-      %   A = CREATECONNECTIVITYMATRIX(TR) loads a triangulation object TR
-      %      and generates a connectivity matrix A.
-      %      The TR object has the following fields:
-      %         - Points: a matrix where each row is the coordinate vector of a
-      %            vertex
-      %         - ConnectivityList: a matrix where:
-      %            - Each element is a vertex ID;
-      %            - Each row represents a triangle or tetrahedron in the
-      %               triangulation;
-      %            - Each row number of TR.ConnectivityList is a triangle or
-      %               tetrahedron ID
+
       %      The A matrix has 1 in the (i,j) position if there is an edge between
       %         points whose IDS are i and j, and 0 otherwise.
 
@@ -202,34 +198,23 @@ classdef STLExtractor < handle
 
 
     function [TheAxis, TheRadius,TheAxialHeight,center, TheAxis2]  = processIndividualParticle(obj,iParticle)
-
+        arguments
+            obj STLExtractor
+            iParticle (1,1) double % particle index to process
+        end
 
       obj.holdFigure;
-      % find the triangles that were grouped into given particle whose index is iParticle
-      particleTriangles = find(obj.trianglesInParticle==iParticle) ;
 
       % build a connectivity list for this particle
-      particleConnectivityList = 0.*obj.globalTriangulation.ConnectivityList ;
-      nTriangles = numel(particleTriangles);
-      for i=1:nTriangles
-        particleConnectivityList = particleConnectivityList | (obj.globalTriangulation.ConnectivityList==particleTriangles(i)) ;
-      end
-      particleConnectivityList = particleConnectivityList(:,1) & particleConnectivityList(:,1) & particleConnectivityList(:,1) ;
-      particleConnectivityList = find(particleConnectivityList) ;
+      localTR = obj.buildLocalTriangulation(iParticle);
+      localPoints = localTR.Points;
+      localTriangles = localTR.ConnectivityList;
 
-      T = obj.globalTriangulation.ConnectivityList(particleConnectivityList,:) ;
-      T2 = 0.*T ;
-      for i=1:nTriangles
-        T2(T==particleTriangles(i)) = i ;
-      end
-
-      P = obj.globalTriangulation.Points(particleTriangles,:) ;
-
-      xC = repmat(mean(P,1),size(P,1),1) ;
-      TheEdges = [T2(:,1),T2(:,2);T2(:,2),T2(:,3);T2(:,3),T2(:,1)] ;
-      TheDx = P(TheEdges(:,2),1)-P(TheEdges(:,1),1) ;
-      TheDy = P(TheEdges(:,2),2)-P(TheEdges(:,1),2) ;
-      TheDz = P(TheEdges(:,2),3)-P(TheEdges(:,1),3) ;
+      xC = repmat(mean(localPoints,1),size(localPoints,1),1) ;
+      TheEdges = [localTriangles(:,1),localTriangles(:,2);localTriangles(:,2),localTriangles(:,3);localTriangles(:,3),localTriangles(:,1)] ;
+      TheDx = localPoints(TheEdges(:,2),1)-localPoints(TheEdges(:,1),1) ;
+      TheDy = localPoints(TheEdges(:,2),2)-localPoints(TheEdges(:,1),2) ;
+      TheDz = localPoints(TheEdges(:,2),3)-localPoints(TheEdges(:,1),3) ;
       [TheDX1,TheDX2] = meshgrid(TheDx,TheDx) ;
       [TheDY1,TheDY2] = meshgrid(TheDy,TheDy) ;
       [TheDZ1,TheDZ2] = meshgrid(TheDz,TheDz) ;
@@ -247,13 +232,13 @@ classdef STLExtractor < handle
 
       k = 1 ;
       TheAxis = [...
-        P(TheEdges(twelveParallelEdges(k),2),1)-P(TheEdges(twelveParallelEdges(k),1),1),...
-        P(TheEdges(twelveParallelEdges(k),2),2)-P(TheEdges(twelveParallelEdges(k),1),2),...
-        P(TheEdges(twelveParallelEdges(k),2),3)-P(TheEdges(twelveParallelEdges(k),1),3)] ;
+        localPoints(TheEdges(twelveParallelEdges(k),2),1)-localPoints(TheEdges(twelveParallelEdges(k),1),1),...
+        localPoints(TheEdges(twelveParallelEdges(k),2),2)-localPoints(TheEdges(twelveParallelEdges(k),1),2),...
+        localPoints(TheEdges(twelveParallelEdges(k),2),3)-localPoints(TheEdges(twelveParallelEdges(k),1),3)] ;
       TheAxialHeight = norm(TheAxis) ;
 
 
-      DistFromCenter = sqrt(sum((P-xC).^2,2)) ;
+      DistFromCenter = sqrt(sum((localPoints-xC).^2,2)) ;
       TheRadius = sqrt(DistFromCenter.^2-(TheAxialHeight/2)^2) ;
 
       % compute the GeometricType associated with this particle
@@ -291,17 +276,17 @@ classdef STLExtractor < handle
       end
 
 
-      P = (P-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      Tri2 = triangulation(T2,P) ;
+      localPoints = (localPoints-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      Tri2 = triangulation(localTriangles,localPoints) ;
       center = xC(1,:);
-      xC = mean(P,1) ;
-      CenterToVertex = P(1,:)-xC ;
+      xC = mean(localPoints,1) ;
+      CenterToVertex = localPoints(1,:)-xC ;
       TheAxis2 = CenterToVertex - dot(CenterToVertex,TheAxis).*TheAxis ;
       TheAxis2 = TheAxis2./norm(TheAxis2) ;
       TheAxis3 = cross(TheAxis,TheAxis2) ;
 
     
-      obj.plotPacking(TheAxis,T2,P);
+      obj.plotPacking(TheAxis,localTriangles,localPoints);
 
 
       if obj.shouldSave
@@ -322,6 +307,47 @@ classdef STLExtractor < handle
             end
 
         end
+    end
+
+    function TR = buildLocalTriangulation(obj,iParticle)
+                  
+          % find the triangle IDs that were grouped into given particle 
+          % whose index is iParticle
+          particlePoints = find(obj.pointsInParticle==iParticle) ;
+          
+          nPoints = numel(particlePoints);
+          
+          % from the global connectivity list, which lists all triangles and points
+          % extracted from the STL file, find only the rows which are pertinent
+          % to this particle
+          particleConnectivityList = 0.*obj.globalTriangulation.ConnectivityList ;
+          for i=1:nPoints
+            % particlePoints(i) will return the i-th point index in this particle
+            % so we observe where this same index appears in the global matrix
+            particleConnectivityList = (particleConnectivityList | ...
+                (obj.globalTriangulation.ConnectivityList==particlePoints(i))) ;
+          end
+          
+          % TODO: Check with Andrea Insinga what's the purpose of this
+          particleConnectivityList = (...
+               particleConnectivityList(:,1) & ...
+               particleConnectivityList(:,1) & ...
+               particleConnectivityList(:,1)) ;
+          trianglesList = find(particleConnectivityList) ;
+    
+          % get only the subset of of global triangulation that contains
+          % points in this particle
+          T = obj.globalTriangulation.ConnectivityList(trianglesList,:) ;
+          % transform from the global point numbering to a local numbering
+          T2 = 0.*T ;
+          for i=1:nPoints
+            T2(T==particlePoints(i)) = i ;
+          end
+    
+          P = obj.globalTriangulation.Points(particlePoints,:) ;
+          TR.Points = P;
+          TR.ConnectivityList = T2;
+        
     end
 
   end
