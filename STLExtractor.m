@@ -210,31 +210,63 @@ classdef STLExtractor < handle
       localPoints = localTR.Points;
       localTriangles = localTR.ConnectivityList;
 
+      % localPoints is a (nPoints x 3) matrix, where each row is a point
+      % so we get the mean (along each column) to get an estimate of the
+      % center of the particle
+      % we then "replicate" this mean value to have a matrix of the same size
+      % as localPoints, so that we can use it to compute the distance
+      % from the center to each point
       xC = repmat(mean(localPoints,1),size(localPoints,1),1) ;
-      TheEdges = [localTriangles(:,1),localTriangles(:,2);localTriangles(:,2),localTriangles(:,3);localTriangles(:,3),localTriangles(:,1)] ;
-      TheDx = localPoints(TheEdges(:,2),1)-localPoints(TheEdges(:,1),1) ;
-      TheDy = localPoints(TheEdges(:,2),2)-localPoints(TheEdges(:,1),2) ;
-      TheDz = localPoints(TheEdges(:,2),3)-localPoints(TheEdges(:,1),3) ;
-      [TheDX1,TheDX2] = meshgrid(TheDx,TheDx) ;
-      [TheDY1,TheDY2] = meshgrid(TheDy,TheDy) ;
-      [TheDZ1,TheDZ2] = meshgrid(TheDz,TheDz) ;
+      
+      % construct a list of all edges in the triangles by combining pairwise 
+      % all the points IDs in the particles triangles
+      % the result is a (nEdges x 2) matrix, where each row is an edge
+      edges = [...
+        localTriangles(:,1),localTriangles(:,2);...
+        localTriangles(:,2),localTriangles(:,3);...
+        localTriangles(:,3),localTriangles(:,1)...
+        ] ;
 
+      % compute the components of all the edges
+      % for instance, edgesdx is a vector of the lengths of the edges in the x direction
+      edgesdx = localPoints(edges(:,2),1)-localPoints(edges(:,1),1) ;
+      edgesdy = localPoints(edges(:,2),2)-localPoints(edges(:,1),2) ;
+      edgesdz = localPoints(edges(:,2),3)-localPoints(edges(:,1),3) ;
 
+      % build meshgrids of this components
+      % here's the patten:
+      %     - TheDX1: all rows are the same, columns are the values of edgesdx
+      %     - TheDX2: all columns are the same, rows are the values of edgesdx
+      %     TheDX2 == TheDX1'
+      [TheDX1,TheDX2] = meshgrid(edgesdx,edgesdx) ;
+      [TheDY1,TheDY2] = meshgrid(edgesdy,edgesdy) ;
+      [TheDZ1,TheDZ2] = meshgrid(edgesdz,edgesdz) ;
+
+      % edge lengths
       TheDN1 = sqrt(TheDX1.^2+TheDY1.^2+TheDZ1.^2) ;
       TheDN2 = sqrt(TheDX2.^2+TheDY2.^2+TheDZ2.^2) ;
+
+      % Compute the dot products of all edges (as vectors) agains all edges
       TheDots = (TheDX1.*TheDX2 + TheDY1.*TheDY2 + TheDZ1.*TheDZ2)./(TheDN1.*TheDN2) ;
+
+      % Find the edges whose dot product is nearly 1; i.e. are all parallel
       SameDir = abs(TheDots)>.999 ;
+      
+      % construct a graph connecting these parallel edges
       Gedges = graph(SameDir) ;
 
       [binsEdges,binsizes] = conncomp(Gedges) ;
       twelveParallelbin = find(binsizes==12) ;
-      twelveParallelEdges = find(binsEdges==twelveParallelbin) ;
-
+      try
+        twelveParallelEdges = find(binsEdges==twelveParallelbin) ;
+      catch
+          T2 = localTriangles; P = localPoints; figure; trisurf(T2,P(:,1),P(:,2),P(:,3),'linestyle','none','facealpha',1) ;
+      end
       k = 1 ;
       TheAxis = [...
-        localPoints(TheEdges(twelveParallelEdges(k),2),1)-localPoints(TheEdges(twelveParallelEdges(k),1),1),...
-        localPoints(TheEdges(twelveParallelEdges(k),2),2)-localPoints(TheEdges(twelveParallelEdges(k),1),2),...
-        localPoints(TheEdges(twelveParallelEdges(k),2),3)-localPoints(TheEdges(twelveParallelEdges(k),1),3)] ;
+        localPoints(edges(twelveParallelEdges(k),2),1)-localPoints(edges(twelveParallelEdges(k),1),1),...
+        localPoints(edges(twelveParallelEdges(k),2),2)-localPoints(edges(twelveParallelEdges(k),1),2),...
+        localPoints(edges(twelveParallelEdges(k),2),3)-localPoints(edges(twelveParallelEdges(k),1),3)] ;
       TheAxialHeight = norm(TheAxis) ;
 
 
