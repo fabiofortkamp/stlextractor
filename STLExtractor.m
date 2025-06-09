@@ -318,7 +318,7 @@ classdef STLExtractor < handle
             TheAxis3 = cross(TheAxis,TheAxis2) ;
 
             if obj.shouldPlot
-                STLExtractor.plotParticles(localTriangles,localPoints);
+                STLExtractor.plotParticles(Tri2);
             end
 
             if obj.shouldSave
@@ -374,15 +374,15 @@ classdef STLExtractor < handle
     end
 
     methods (Static)
-        function plotParticles(T,P)
+        function plotParticles(TR)
             %PLOTPARTICLES Plot the triangulation associated with one or more
             %particles
             arguments
-                T double % triangulation connectivity matrix
-                P (:,3) double % points coordinates matrixs
+                TR % triangulation object
             end
 
-
+            T = TR.ConnectivityList;
+            P = TR.Points;
             trisurf(T,P(:,1),P(:,2),P(:,3),"FaceColor","blue",'linestyle','none','facealpha',1)
 
 
