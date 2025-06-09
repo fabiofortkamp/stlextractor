@@ -3,14 +3,13 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
     properties (TestParameter)
        nParticles = {48,100,200};
+       largeFile = {
+           "packing_parameters_5_4_success.stl",...
+           "packing_parameters_15_1_success.stl"}
     end
-
     methods (Test)
 
         function test_process_can_identify_number_of_triangles(testCase,nParticles)
-            % Specify the input(s) of
-            % STLExtractor
-            projectDir = currentProject().RootFolder;
             testFileDir = fullfile(projectDir,"tests","test_stl_files");
 
             workingDir = "test_output";
@@ -20,7 +19,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 
                 filename = fullfile(testFileDir,['particles_',num2str(i),'.stl']);
                 e = STLExtractor(filename,workingDir);
-                % Exercise the function obj.process
                 l = e.process();
 
                 testCase.verifyEqual(numel(l), i);
@@ -31,9 +29,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
         end
 
         function test_process_can_parse_one_particle(testCase)
-            % Specify the input(s) of
-            % STLExtractor
-            projectDir = currentProject().RootFolder;
             testFileDir = fullfile(projectDir,"tests","test_stl_files");
             tol = 1e-3;
             workingDir = "test_output"; 
@@ -77,6 +72,18 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 testCase.verifyLessThanOrEqual(abs(prism.position-center),tol);
 
             end
+
+
+        end
+    
+        function test_can_process_larger_packings(testCase,largeFile)
+
+                testFileDir = fullfile(projectDir,"tests","test_stl_files");
+                filename = fullfile(testFileDir,largeFile);
+                e = STLExtractor(filename,[],"ShouldPlot",false,"ShouldSave",false);
+                l = e.process();
+
+                testCase.verifyNotEmpty(l);
 
 
         end
