@@ -257,11 +257,8 @@ classdef STLExtractor < handle
 
             [binsEdges,binsizes] = conncomp(Gedges) ;
             twelveParallelbin = find(binsizes==12) ;
-            try
-                twelveParallelEdges = find(binsEdges==twelveParallelbin) ;
-            catch
-                T2 = localTriangles; P = localPoints; figure; trisurf(T2,P(:,1),P(:,2),P(:,3),'linestyle','none','facealpha',1) ;
-            end
+            twelveParallelEdges = find(binsEdges==twelveParallelbin) ;
+
             k = 1 ;
             TheAxis = [...
                 localPoints(edges(twelveParallelEdges(k),2),1)-localPoints(edges(twelveParallelEdges(k),1),1),...
