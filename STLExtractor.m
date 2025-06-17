@@ -8,7 +8,6 @@ classdef STLExtractor < handle
         baseFilename string {mustBeFile}
         saveDir string {mustBeFolder}
         scale double {mustBePositive} = 0.95;
-        shouldPlot (1,1) logical
         shouldSave (1,1) logical
     end
 
@@ -27,8 +26,6 @@ classdef STLExtractor < handle
         %       - Each row represents a triangle or tetrahedron in the
         %         triangulation;
         %       - Row numbers of are a triangle or tetrahedron IDs
-        packingFigure
-        colormap
         particleTypes
         particleGeometry
     end
@@ -46,19 +43,13 @@ classdef STLExtractor < handle
             arguments
                 filename
                 saveDir
-                options.ShouldPlot (1,1) logical = false
                 options.ShouldSave (1,1) logical = false
             end
 
             obj.baseFilename = filename;
             obj.saveDir = saveDir;
 
-
-            obj.shouldPlot = options.ShouldPlot;
             obj.shouldSave = options.ShouldSave;
-            if obj.shouldPlot
-                obj.initializeFigure;
-            end
 
         end
 
@@ -68,6 +59,7 @@ classdef STLExtractor < handle
             [Packing,geometricInfo] = obj.AnalyzeSTL;
 
             l = HexagonalPrism.empty;
+            
 
             for iParticle = 1:obj.nParticles
                 position = geometricInfo(iParticle).center;
@@ -76,9 +68,10 @@ classdef STLExtractor < handle
                 normal = geometricInfo(iParticle).axes;
                 faceRotation = Packing.AllTheAxes2{iParticle};
                 l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation);
+                triangulations{iParticle} = geometricInfo(iParticle).TR;
             end
 
-            ep = ExtractedPacking(l);
+            ep = ExtractedPacking(l, triangulations);
            
 
         end
@@ -86,22 +79,7 @@ classdef STLExtractor < handle
 
     methods (Access = private)
 
-        function f = initializeFigure(obj)
-            obj.packingFigure = figure;
 
-            % change width and height
-            % from: https://se.mathworks.com/help/releases/R2024b/matlab/ref/figure.html#bvjs6cb-3
-
-            f.Units = "centimeters";
-            f.Position(3:4) = [16,9];
-
-            axis equal
-            light('position',[2,2,2])
-            view(30,30) ;
-            xlabel("x");
-            ylabel("y");
-            zlabel("z");
-        end
         function [Packing,geometricInfo] = AnalyzeSTL(obj)
             % ANALYZESTL Process the STL file to calculate geometric parameters and
             %   produce individual files.
@@ -133,7 +111,6 @@ classdef STLExtractor < handle
             obj.pointsInParticle = conncomp(G) ;
 
             obj.nParticles = max(obj.pointsInParticle);
-            obj.colormap  = jet(obj.nParticles);
             obj.particleTypes = ones(1,obj.nParticles);
             obj.particleGeometry = GeometricType.empty;
         end
@@ -167,7 +144,7 @@ classdef STLExtractor < handle
 
             for iParticle=1:obj.nParticles
 
-                [TheAxis, TheRadius,TheAxialHeight, center,TheAxis2] = obj.processIndividualParticle(iParticle);
+                [TheAxis, TheRadius,TheAxialHeight, center,TheAxis2,TR] = obj.processIndividualParticle(iParticle);
                 Packing.AllTheAxes{iParticle} = TheAxis ;
                 Packing.AllTheAxes2{iParticle} = TheAxis2 ;
                 Packing.AllTheRadii(iParticle) = TheRadius(1) ;
@@ -176,32 +153,22 @@ classdef STLExtractor < handle
                 thisInfo.volume = calculateHexagonalArea(TheRadius(1))*TheAxialHeight;
                 thisInfo.center = center;
                 thisInfo.axes = TheAxis;
+                thisInfo.TR = TR;
                 geometricInfo(iParticle) = thisInfo;
             end
 
         end
 
 
-        function holdFigure(obj)
-            %HOLDFIGURE Retrive the main packing figure for plotting, if plotting is
-            %enabled.
-            %
-            %   HOLDFIGURE will access the object's plotting figure for subsequent
-            %       plotting commands
-            if obj.shouldPlot
-                figure(obj.packingFigure);
-                hold on
-            end
-        end
 
 
-        function [TheAxis, TheRadius,TheAxialHeight,center, TheAxis2]  = processIndividualParticle(obj,iParticle)
+
+        function [TheAxis, TheRadius,TheAxialHeight,center, TheAxis2,Tri2]  = processIndividualParticle(obj,iParticle)
             arguments
                 obj STLExtractor
                 iParticle (1,1) double % particle index to process
             end
 
-            obj.holdFigure;
 
             % build a connectivity list for this particle
             localTR = obj.buildLocalTriangulation(iParticle);
@@ -312,9 +279,6 @@ classdef STLExtractor < handle
             TheAxis2 = TheAxis2./norm(TheAxis2) ;
             TheAxis3 = cross(TheAxis,TheAxis2) ;
 
-            if obj.shouldPlot
-                STLExtractor.plotParticles(Tri2);
-            end
 
             if obj.shouldSave
                 thisFilename = fullfile(obj.saveDir, ...
@@ -368,19 +332,5 @@ classdef STLExtractor < handle
 
     end
 
-    methods (Static)
-        function plotParticles(TR)
-            %PLOTPARTICLES Plot the triangulation associated with one or more
-            %particles
-            arguments
-                TR % triangulation object
-            end
 
-            T = TR.ConnectivityList;
-            P = TR.Points;
-            trisurf(T,P(:,1),P(:,2),P(:,3),"FaceColor","blue",'linestyle','none','facealpha',1)
-
-
-        end
-    end
 end
