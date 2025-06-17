@@ -19,9 +19,9 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 
                 filename = fullfile(testFileDir,['particles_',num2str(i),'.stl']);
                 e = STLExtractor(filename,workingDir);
-                l = e.process();
-
-                testCase.verifyEqual(numel(l), i);
+                ep = e.process();
+                
+                testCase.verifyEqual(length(ep), i);
 
             end
 
@@ -40,11 +40,11 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 filename = fullfile(testFileDir,basename);
                 e = STLExtractor(filename,workingDir);
                 % Exercise the function obj.process
-                l = e.process();
+                ep = e.process();
     
-                testCase.verifyEqual(numel(l), 1);
+                testCase.verifyEqual(length(ep), 1);
     
-                prism = l(1);
+                prism = ep.items(1);
     
                 tokens = regexp(filename,'particle_r_(\d)_t_(\d)_c_(\d)_(\d)_(\d)_n_(\d)_(\d)_(\d)*','tokens');
                 tokens = tokens{1};

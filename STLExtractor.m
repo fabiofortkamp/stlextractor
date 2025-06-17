@@ -62,10 +62,8 @@ classdef STLExtractor < handle
 
         end
 
-        function l = process(obj)
-            %PROCESS Run the extraction process and save individual files.
-            %   l = obj.PROCESS() returns a list of HEXAGONALPRISM objects, with each one
-            %     being saved in individual STL files in obj.saveDir
+        function ep = process(obj)
+            %PROCESS Run the extraction process, returning the extracted information
 
             [Packing,geometricInfo] = obj.AnalyzeSTL;
 
@@ -80,8 +78,8 @@ classdef STLExtractor < handle
                 l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation);
             end
 
-
-
+            ep = ExtractedPacking(l);
+           
 
         end
     end

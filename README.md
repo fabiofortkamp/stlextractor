@@ -24,7 +24,8 @@ up different parameters.
 ## Usage
 
 See an example [Live Script](./docs/tutorials/Tutorial1_Extract.mlx) for examples of using
-the package.
+the package (you need to add the [tutorials](./docs/tutorials/) folder to the MATLAB
+path for it to run correctly, or to change the current folder to this path).
 
 ## Testing
 
