@@ -1,8 +1,12 @@
 classdef ExtractedPacking
     %EXTRACTEDPACKING Packing of particles extracted from some mesh file
 
-    properties
+    properties (SetAccess = private)
         items (1,:) HexagonalPrism
+        
+    end
+
+    properties (Access = private)
         triangulations (1,:)
     end
 

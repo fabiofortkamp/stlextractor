@@ -80,7 +80,7 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
                 testFileDir = fullfile(projectDir,"tests","test_stl_files");
                 filename = fullfile(testFileDir,largeFile);
-                e = STLExtractor(filename,[],"ShouldPlot",false,"ShouldSave",false);
+                e = STLExtractor(filename,[],"ShouldSave",false);
                 l = e.process();
 
                 testCase.verifyNotEmpty(l);
