@@ -9,7 +9,7 @@ classdef HexagonalPrism
     normal (1,3) double
     area (1,1) double
     faceRotation(1,3) double
-    vertices (1,3) double
+    vertices (12,3) double
     triangulation
   end
 
@@ -22,6 +22,7 @@ classdef HexagonalPrism
         normal  (1,3) double {mustBeNormalized}
         faceRotation (1,3) double {mustBeNormalized}
         triangulation
+
       end
       %HEXAGONALPRISM Construct an instance of this class
 
@@ -33,6 +34,7 @@ classdef HexagonalPrism
       obj.area = 3/2*sqrt(3)*obj.radius^2;
       obj.volume = obj.area * obj.thickness;
       obj.triangulation = triangulation;
+      obj.vertices = obj.triangulation.Points;
     end
 
     function write(obj,filename)

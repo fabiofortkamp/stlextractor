@@ -26,7 +26,7 @@ classdef testExtractedPacking < matlab.unittest.TestCase
             new_ep = ep.cutoff(margin,direction);
 
             radii = arrayfun(@(hp) hp.radius,ep.items);
-            tol = max(radii);
+            tol = 2*max(radii);
 
             switch direction
                 case "x"

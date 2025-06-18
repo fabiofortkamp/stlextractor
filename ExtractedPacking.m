@@ -123,12 +123,21 @@ classdef ExtractedPacking < handle
         function initializeLimitsAndStatistics(obj)
             % INITIALIZELIMITS Define the i-{min,max} attributes (e.g. "xmin","ymax" etc)
 
-            % map through the items to get the position coordinates
-            % hp = HexagonalPrism instance
+            % 12 because there 2 faces of 6 vertices in each prism;
+            nVertices = 12 * length(obj);
+            xvalues = zeros(1,nVertices);
+            yvalues = zeros(1,nVertices);
+            zvalues = zeros(1,nVertices);
 
-            xvalues = arrayfun(@(hp) hp.position(1),obj.items);
-            yvalues = arrayfun(@(hp) hp.position(2),obj.items);
-            zvalues = arrayfun(@(hp) hp.position(3),obj.items);
+            for iPrism = 1:length(obj)
+                hp = obj.items(iPrism);
+                idxmin = 12*(iPrism-1)+1;
+                idxmax = 12*(iPrism-1)+12;
+                xvalues(idxmin:idxmax) = hp.vertices(:,1);
+                yvalues(idxmin:idxmax) = hp.vertices(:,2);
+                zvalues(idxmin:idxmax) = hp.vertices(:,3);
+
+            end
 
             obj.xmin = min(xvalues);
             obj.xmax = max(xvalues);
@@ -166,10 +175,16 @@ classdef ExtractedPacking < handle
         function ep = filterPacking(obj,direction,vmin,vmax)
             pre = obj.items;
             nHexagons = numel(pre);
-            hexagonPositions = zeros(nHexagons,3);
-            for i = 1:nHexagons
-                hexagonPositions(i,:) = pre(i).position;
+            hexagonPositionsMin = zeros(nHexagons,3);
+            hexagonPositionsMax = zeros(nHexagons,3);
+            for iPrism = 1:length(obj)
+                hp = obj.items(iPrism);
+                for j = [1,2,3]
+                    hexagonPositionsMin(iPrism,j) = min(hp.vertices(:,j));
+                    hexagonPositionsMax(iPrism,j) = max(hp.vertices(:,j));
+                end
             end
+
             switch direction
                 case "x"
                     ax = 1;
@@ -178,10 +193,9 @@ classdef ExtractedPacking < handle
                 case "z"
                     ax = 3;
             end
-            indx = find(hexagonPositions(:,ax) > vmin & hexagonPositions(:,ax) < vmax);
+            indx = find(hexagonPositionsMin(:,ax) > vmin & hexagonPositionsMax(:,ax) < vmax);
             nl = pre(indx);
-            ntr = obj.triangulations(indx);
-            ep = ExtractedPacking(nl,ntr);
+            ep = ExtractedPacking(nl);
         end
 
                 function out = averageAlignment(obj,direction)
