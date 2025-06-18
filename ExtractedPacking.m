@@ -69,6 +69,37 @@ classdef ExtractedPacking < handle
 
         end
 
+        function out = averageAlignment(obj,direction)
+            % AVERAGEALIGNMENT Compute mean of alignments of items along given direction
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
+            out = mean(alignments);
+        end
+
+        function out = standardDeviationAlignment(obj,direction)
+            % STANDARDDEVIATIONALIGNMENT Compute standard deviation of alignments of items along
+            % given direction
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
+            out = std(alignments);
+        end
+
+        function out = volumeWeightedAverageAlignment(obj,direction)
+            % VOLUMEWEIGHTEDAVERAGEALIGNMENT Compute mean of alignments of items along
+            % given direction, weighted by the volume of each item
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
+            out = mean(alignments);
+        end
+
+        function out = volumeWeightedStandardDeviationAlignment(obj,direction)
+            % VOLUMEWEIGHTEDSTANDARDDEVIATIONALIGNMENT Compute mean of alignments of 
+            % items along given direction, weighted by the volume of each item
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
+            out = std(alignments);
+        end
+
     end
 
     methods (Access = private)
