@@ -28,20 +28,15 @@ classdef ExtractedPacking < handle
         volumeWeightedStandardDeviationAlignmentZ (1,1) double
     end
 
-    properties (Access = private)
-        triangulations (1,:)
-    end
 
 
     methods
-        function obj = ExtractedPacking(prisms, triangulations)
+        function obj = ExtractedPacking(prisms)
             %EXTRACTEDPACKING Construct an instance of this class
             arguments
                 prisms (1,:) HexagonalPrism
-                triangulations
             end
             obj.items = prisms;
-            obj.triangulations = triangulations;
             obj.initializeLimitsAndStatistics;
         end
 
@@ -71,7 +66,7 @@ classdef ExtractedPacking < handle
             zlabel("z");
 
             for i = 1:length(obj)
-                TR = obj.triangulations{i};
+                TR = obj.items(i).triangulation;
                 T = TR.ConnectivityList;
                 P = TR.Points;
                 trisurf(T,P(:,1),P(:,2),P(:,3),"FaceColor","blue",'linestyle','none','facealpha',1)

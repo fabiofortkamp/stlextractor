@@ -66,11 +66,12 @@ classdef STLExtractor < handle
                 thickness = Packing.AllTheHeights(iParticle);
                 normal = geometricInfo(iParticle).axes;
                 faceRotation = Packing.AllTheAxes2{iParticle};
-                l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation);
-                triangulations{iParticle} = geometricInfo(iParticle).TR;
+                triangulation = geometricInfo(iParticle).TR;
+                l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation,triangulation);
+                
             end
 
-            ep = ExtractedPacking(l, triangulations);
+            ep = ExtractedPacking(l);
            
 
         end
