@@ -7,7 +7,6 @@ classdef STLExtractor < handle
     properties (SetAccess = private)
         baseFilename string {mustBeFile}
         saveDir string {mustBeFolder}
-        scale double {mustBePositive} = 0.95;
         shouldSave (1,1) logical
     end
 
@@ -270,7 +269,7 @@ classdef STLExtractor < handle
             end
 
 
-            localPoints = (localPoints-xC).*obj.scale + xC ;  % SCALING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            localPoints = (localPoints-xC) + xC ;  
             Tri2 = triangulation(localTriangles,localPoints) ;
             center = xC(1,:);
             xC = mean(localPoints,1) ;
