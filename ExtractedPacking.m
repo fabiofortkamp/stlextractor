@@ -34,15 +34,15 @@ classdef ExtractedPacking < handle
         end
 
         function outputArg = length(obj)
-            %LENGTH Return the number of extracted particles 
+            %LENGTH Return the number of extracted particles
             %   Detailed explanation goes here
             outputArg = length(obj.items);
         end
 
-           
+
         function f = plot(obj)
             %PLOTPARTICLES Plot a rendering of the packing.
-            
+
             % change width and height
             % from: https://se.mathworks.com/help/releases/R2024b/matlab/ref/figure.html#bvjs6cb-3
 
@@ -93,11 +93,49 @@ classdef ExtractedPacking < handle
         end
 
         function out = volumeWeightedStandardDeviationAlignment(obj,direction)
-            % VOLUMEWEIGHTEDSTANDARDDEVIATIONALIGNMENT Compute mean of alignments of 
+            % VOLUMEWEIGHTEDSTANDARDDEVIATIONALIGNMENT Compute mean of alignments of
             % items along given direction, weighted by the volume of each item
             v = getDirectionVector(direction);
             alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
             out = std(alignments);
+        end
+
+        function ep = cutoff(obj,margin,startDirection)
+            %CUTOFF Create cutoff of another packing, starting by subtracting a margin
+            % from startDirection
+
+
+            switch startDirection
+                case "x"
+                    Lnew = obj.Lx*(1-margin);
+                case "y"
+                    Lnew = obj.Ly*(1-margin);
+                case "z"
+                    Lnew = obj.Lz*(1-margin);
+                otherwise
+                    error("Unrecognized direction to start cutoff process")
+            end
+
+            dx = (obj.Lx - Lnew)/2;
+            dy = (obj.Ly - Lnew)/2;
+            dz = (obj.Lz - Lnew)/2;
+
+
+            xmaxpost = obj.xmax - dx;
+            xminpost = obj.xmin + dx;
+            ymaxpost = obj.ymax - dy;
+            yminpost = obj.ymin + dy;
+            zmaxpost = obj.zmax - dz;
+            zminpost = obj.zmin + dz;
+
+
+
+            ep = filterPacking(obj,"x",xminpost,xmaxpost);
+            ep = filterPacking(ep,"y",yminpost,ymaxpost);
+            ep = filterPacking(ep,"z",zminpost,zmaxpost);
+
+
+
         end
 
     end
@@ -105,31 +143,55 @@ classdef ExtractedPacking < handle
     methods (Access = private)
 
         function initializeLimitsAndStatistics(obj)
-        % INITIALIZELIMITS Define the i-{min,max} attributes (e.g. "xmin","ymax" etc)
+            % INITIALIZELIMITS Define the i-{min,max} attributes (e.g. "xmin","ymax" etc)
 
-        % map through the items to get the position coordinates
-        % hp = HexagonalPrism instance
-        xvalues = arrayfun(@(hp) hp.position(1),l.items);
-        yvalues = arrayfun(@(hp) hp.position(2),l.items);
-        zvalues = arrayfun(@(hp) hp.position(3),l.items);
+            % map through the items to get the position coordinates
+            % hp = HexagonalPrism instance
 
-        obj.xmin = min(xvalues);
-        obj.xmax = max(xvalues);
-        obj.ymin = min(yvalues);
-        obj.ymax = max(yvalues);
-        obj.zmin = min(zvalues);
-        obj.zmax = max(zvalues);
-        obj.Lx = obj.xmax - obj.xmin;
-        obj.Ly = obj.ymax - obj.ymin;
-        obj.Lz = obj.zmax - obj.zmin;
-        obj.volume = obj.Lx * obj.Ly * obj.Lz;
+            xvalues = arrayfun(@(hp) hp.position(1),obj.items);
+            yvalues = arrayfun(@(hp) hp.position(2),obj.items);
+            zvalues = arrayfun(@(hp) hp.position(3),obj.items);
 
-        volumes = arrayfun(@(hp) hp.volume,l.items);
-        prismsVolume = sum(volumes);
+            obj.xmin = min(xvalues);
+            obj.xmax = max(xvalues);
+            obj.ymin = min(yvalues);
+            obj.ymax = max(yvalues);
+            obj.zmin = min(zvalues);
+            obj.zmax = max(zvalues);
+            obj.Lx = obj.xmax - obj.xmin;
+            obj.Ly = obj.ymax - obj.ymin;
+            obj.Lz = obj.zmax - obj.zmin;
+            obj.volume = obj.Lx * obj.Ly * obj.Lz;
 
-        obj.volumetricFillingFraction = prismsVolume/obj.volume;
+            volumes = arrayfun(@(hp) hp.volume,obj.items);
+            prismsVolume = sum(volumes);
+
+            obj.volumetricFillingFraction = prismsVolume/obj.volume;
         end
 
-
+        function ep = filterPacking(obj,direction,vmin,vmax)
+            pre = obj.items;
+            nHexagons = numel(pre);
+            hexagonPositions = zeros(nHexagons,3);
+            for i = 1:nHexagons
+                hexagonPositions(i,:) = pre(i).position;
+            end
+            switch direction
+                case "x"
+                    ax = 1;
+                case "y"
+                    ax = 2;
+                case "z"
+                    ax = 3;
+            end
+            indx = find(hexagonPositions(:,ax) > vmin & hexagonPositions(:,ax) < vmax);
+            nl = pre(indx);
+            ntr = obj.triangulations(indx);
+            ep = ExtractedPacking(nl,ntr);
+        end
     end
+
+
 end
+
+
