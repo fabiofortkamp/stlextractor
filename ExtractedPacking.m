@@ -14,6 +14,18 @@ classdef ExtractedPacking < handle
         Lz (1,1) double
         volume (1,1) double
         volumetricFillingFraction (1,1) double
+        averageAlignmentX (1,1) double
+        standardDeviationAlignmentX (1,1) double
+        volumeWeightedAverageAlignmentX (1,1) double
+        volumeWeightedStandardDeviationAlignmentX (1,1) double
+        averageAlignmentY (1,1) double
+        standardDeviationAlignmentY (1,1) double
+        volumeWeightedAverageAlignmentY (1,1) double
+        volumeWeightedStandardDeviationAlignmentY (1,1) double
+        averageAlignmentZ (1,1) double
+        standardDeviationAlignmentZ (1,1) double
+        volumeWeightedAverageAlignmentZ (1,1) double
+        volumeWeightedStandardDeviationAlignmentZ (1,1) double
     end
 
     properties (Access = private)
@@ -69,36 +81,7 @@ classdef ExtractedPacking < handle
 
         end
 
-        function out = averageAlignment(obj,direction)
-            % AVERAGEALIGNMENT Compute mean of alignments of items along given direction
-            v = getDirectionVector(direction);
-            alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
-            out = mean(alignments);
-        end
 
-        function out = standardDeviationAlignment(obj,direction)
-            % STANDARDDEVIATIONALIGNMENT Compute standard deviation of alignments of items along
-            % given direction
-            v = getDirectionVector(direction);
-            alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
-            out = std(alignments);
-        end
-
-        function out = volumeWeightedAverageAlignment(obj,direction)
-            % VOLUMEWEIGHTEDAVERAGEALIGNMENT Compute mean of alignments of items along
-            % given direction, weighted by the volume of each item
-            v = getDirectionVector(direction);
-            alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
-            out = mean(alignments);
-        end
-
-        function out = volumeWeightedStandardDeviationAlignment(obj,direction)
-            % VOLUMEWEIGHTEDSTANDARDDEVIATIONALIGNMENT Compute mean of alignments of
-            % items along given direction, weighted by the volume of each item
-            v = getDirectionVector(direction);
-            alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
-            out = std(alignments);
-        end
 
         function ep = cutoff(obj,margin,startDirection)
             %CUTOFF Create cutoff of another packing, starting by subtracting a margin
@@ -167,6 +150,22 @@ classdef ExtractedPacking < handle
             prismsVolume = sum(volumes);
 
             obj.volumetricFillingFraction = prismsVolume/obj.volume;
+
+            obj.averageAlignmentX = obj.averageAlignment("x");
+            obj.standardDeviationAlignmentX = obj.standardDeviationAlignment("x");     
+            obj.volumeWeightedAverageAlignmentX = obj.volumeWeightedAverageAlignment("x");
+            obj.volumeWeightedStandardDeviationAlignmentX = obj.volumeWeightedStandardDeviationAlignment("x");
+
+            obj.averageAlignmentY = obj.averageAlignment("y");
+            obj.standardDeviationAlignmentY = obj.standardDeviationAlignment("y");     
+            obj.volumeWeightedAverageAlignmentY = obj.volumeWeightedAverageAlignment("y");
+            obj.volumeWeightedStandardDeviationAlignmentY = obj.volumeWeightedStandardDeviationAlignment("y");
+
+            obj.averageAlignmentZ = obj.averageAlignment("z");
+            obj.standardDeviationAlignmentZ = obj.standardDeviationAlignment("z");     
+            obj.volumeWeightedAverageAlignmentZ = obj.volumeWeightedAverageAlignment("z");
+            obj.volumeWeightedStandardDeviationAlignmentZ = obj.volumeWeightedStandardDeviationAlignment("z");
+
         end
 
         function ep = filterPacking(obj,direction,vmin,vmax)
@@ -188,6 +187,37 @@ classdef ExtractedPacking < handle
             nl = pre(indx);
             ntr = obj.triangulations(indx);
             ep = ExtractedPacking(nl,ntr);
+        end
+
+                function out = averageAlignment(obj,direction)
+            % AVERAGEALIGNMENT Compute mean of alignments of items along given direction
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
+            out = mean(alignments);
+        end
+
+        function out = standardDeviationAlignment(obj,direction)
+            % STANDARDDEVIATIONALIGNMENT Compute standard deviation of alignments of items along
+            % given direction
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
+            out = std(alignments);
+        end
+
+        function out = volumeWeightedAverageAlignment(obj,direction)
+            % VOLUMEWEIGHTEDAVERAGEALIGNMENT Compute mean of alignments of items along
+            % given direction, weighted by the volume of each item
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
+            out = mean(alignments);
+        end
+
+        function out = volumeWeightedStandardDeviationAlignment(obj,direction)
+            % VOLUMEWEIGHTEDSTANDARDDEVIATIONALIGNMENT Compute mean of alignments of
+            % items along given direction, weighted by the volume of each item
+            v = getDirectionVector(direction);
+            alignments = arrayfun(@(hp) hp.volume*dot(hp.normal,v),obj.items);
+            out = std(alignments);
         end
     end
 
