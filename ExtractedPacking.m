@@ -1,9 +1,19 @@
-classdef ExtractedPacking
+classdef ExtractedPacking < handle
     %EXTRACTEDPACKING Packing of particles extracted from some mesh file
 
     properties (SetAccess = private)
         items (1,:) HexagonalPrism
-        
+        xmin (1,1) double
+        xmax (1,1) double
+        ymin (1,1) double
+        ymax (1,1) double
+        zmin (1,1) double
+        zmax (1,1) double
+        Lx (1,1) double
+        Ly (1,1) double
+        Lz (1,1) double
+        volume (1,1) double
+        volumetricFillingFraction (1,1) double
     end
 
     properties (Access = private)
@@ -20,6 +30,7 @@ classdef ExtractedPacking
             end
             obj.items = prisms;
             obj.triangulations = triangulations;
+            obj.initializeLimitsAndStatistics;
         end
 
         function outputArg = length(obj)
@@ -57,6 +68,37 @@ classdef ExtractedPacking
             hold off
 
         end
+
+    end
+
+    methods (Access = private)
+
+        function initializeLimitsAndStatistics(obj)
+        % INITIALIZELIMITS Define the i-{min,max} attributes (e.g. "xmin","ymax" etc)
+
+        % map through the items to get the position coordinates
+        % hp = HexagonalPrism instance
+        xvalues = arrayfun(@(hp) hp.position(1),l.items);
+        yvalues = arrayfun(@(hp) hp.position(2),l.items);
+        zvalues = arrayfun(@(hp) hp.position(3),l.items);
+
+        obj.xmin = min(xvalues);
+        obj.xmax = max(xvalues);
+        obj.ymin = min(yvalues);
+        obj.ymax = max(yvalues);
+        obj.zmin = min(zvalues);
+        obj.zmax = max(zvalues);
+        obj.Lx = obj.xmax - obj.xmin;
+        obj.Ly = obj.ymax - obj.ymin;
+        obj.Lz = obj.zmax - obj.zmin;
+        obj.volume = obj.Lx * obj.Ly * obj.Lz;
+
+        volumes = arrayfun(@(hp) hp.volume,l.items);
+        prismsVolume = sum(volumes);
+
+        obj.volumetricFillingFraction = prismsVolume/obj.volume;
+        end
+
 
     end
 end
