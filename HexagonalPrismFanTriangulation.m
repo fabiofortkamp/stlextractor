@@ -1,6 +1,12 @@
 classdef HexagonalPrismFanTriangulation
-    %HEXAGONALPRISMFANTRIANGULATION Strategy for creating a simple triangulation for 
+    %HEXAGONALPRISMFANTRIANGULATION Strategy for creating a simple triangulation for
     % a prism from its geometric information
+
+    properties
+        Points
+        ConnectivityList
+    end
+
 
     methods
         function obj = HexagonalPrismFanTriangulation(position,radius,thickness,normal)
@@ -12,6 +18,20 @@ classdef HexagonalPrismFanTriangulation
                 normal  (1,3) double {mustBeNormalized}
             end
 
+            obj.Points = zeros([12,3]);
+            obj.ConnectivityList = zeros([20,3]);
+
+
+
+        end
+
+        % Override isa to return true for triangulation
+        function tf = isa(obj, className)
+            if strcmp(className, 'triangulation')
+                tf = true;
+            else
+                tf = builtin('isa', obj, className);
+            end
         end
 
     end

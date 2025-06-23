@@ -15,5 +15,19 @@ classdef testHexagonalPrismFanTriangulation < matlab.unittest.TestCase
             actual_obj = HexagonalPrismFanTriangulation(position, radius, thickness, normal);
             testCase.verifyInstanceOf(actual_obj,"triangulation");
         end
+
+       function test_HexagonalPrismFanTriangulation_correct_shape(testCase)
+            % Specify the input(s) of
+            % HexagonalPrismFanTriangulation
+            normal = [0,0,1];
+            position = [0,0,0];
+            radius = 2.0;
+            thickness = 1.0;
+
+            % Exercise the function HexagonalPrismFanTriangulation
+            actual_obj = HexagonalPrismFanTriangulation(position, radius, thickness, normal);
+            testCase.verifySize(actual_obj.Points,[12,3]);
+            testCase.verifySize(actual_obj.ConnectivityList,[20,3]);
+        end
     end
 end
