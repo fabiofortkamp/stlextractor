@@ -19,8 +19,8 @@ classdef HexagonalPrism
         position (1,3) double
         radius (1,1) double {mustBePositive}
         thickness (1,1) double {mustBePositive}
-        normal  (1,3) double {mustBeNormalized}
-        faceRotation (1,3) double {mustBeNormalized} = [1,0,0]
+        normal  (1,3) double
+        faceRotation (1,3) double = [1,0,0]
         triangulation = []
       end
       %HEXAGONALPRISM Construct an instance of this class
@@ -28,13 +28,13 @@ classdef HexagonalPrism
       obj.thickness = thickness;
       obj.radius = radius;
       obj.position = position;
-      obj.normal = normal;
+      obj.normal = normal./norm(normal);
       obj.area = 3/2*sqrt(3)*obj.radius^2;
-      obj.faceRotation = faceRotation;
+      obj.faceRotation = faceRotation ./ norm(faceRotation);
       obj.volume = obj.area * obj.thickness;
 
       if isempty(triangulation)
-          triangulation = HexagonalPrismFanTriangulation(position,radius,thickness,normal);
+          triangulation = HexagonalPrismFanTriangulation(position,radius,thickness,obj.normal);
       end
 
       if ~isa(triangulation,'triangulation')

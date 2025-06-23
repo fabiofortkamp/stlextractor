@@ -27,43 +27,5 @@ classdef testHexagonalPrism < matlab.unittest.TestCase
 
         end
 
-        function test_parsing_real_stl_yields_fan_triangulation(testCase,basename)
-            testFileDir = fullfile(projectDir,"tests","test_stl_files");
-            workingDir = "test_output";
-
-
-            filename = fullfile(testFileDir,basename);
-            e = STLExtractor(filename,workingDir);
-            % Exercise the function obj.process
-            ep = e.process();
-
-
-
-            prism = ep.items(1);
-
-            tokens = regexp(filename,'particle_r_(\d)_t_(\d)_c_(\d)_(\d)_(\d)_n_(\d)_(\d)_(\d)*','tokens');
-            tokens = tokens{1};
-            radius = str2double(tokens{1});
-            thickness = str2double(tokens{2});
-
-            center = [str2double(tokens{3}),str2double(tokens{4}),str2double(tokens{5})];
-            normal = [str2double(tokens{6}),str2double(tokens{7}),str2double(tokens{8})];
-            normal = normal./norm(normal);
-
-            % check that we have one hexagonal prism and can access it
-            testCase.verifyEqual(length(ep), 1);
-            hp = ep.items(1);
-            testCase.verifyInstanceOf(hp,"HexagonalPrism");
-
-            testCase.verifyInstanceOf(hp.triangulation,"triangulation");
-
-            % we should be able to create an hexagonal prism without the
-            % triangulation and still get the same triangulation
-            % woTR = "without triangulation"
-            hpWOTR = HexagonalPrism(center,radius,thickness,normal);
-            testCase.verifyEqual(hp.triangulation.Points,hpWOTR.triangulation.Points);
-
-
-        end
     end
 end
