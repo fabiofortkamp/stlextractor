@@ -33,6 +33,10 @@ classdef HexagonalPrism
       obj.faceRotation = faceRotation;
       obj.volume = obj.area * obj.thickness;
 
+      if isempty(triangulation)
+          triangulation = FanTriangulation(position,radius,thickness,normal);
+      end
+
       if ~isa(triangulation,'triangulation')
           msg = ...
               'Invalid triangulation argument passed to HexagonalPrism constructor.';
