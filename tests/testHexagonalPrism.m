@@ -58,7 +58,7 @@ classdef testHexagonalPrism < matlab.unittest.TestCase
                 % we should be able to create an hexagonal prism without the
                 % triangulation and still get the same triangulation
                 % woTR = "without triangulation"
-                hpWOTR = HexagonalPrism(center,radius,thickness,normal,[0,0,0]);
+                hpWOTR = HexagonalPrism(center,radius,thickness,normal);
                 testCase.verifyEqual(hp,hpWOTR);
 
             end

@@ -20,9 +20,8 @@ classdef HexagonalPrism
         radius (1,1) double {mustBePositive}
         thickness (1,1) double {mustBePositive}
         normal  (1,3) double {mustBeNormalized}
-        faceRotation (1,3) double {mustBeNormalized}
-        triangulation
-
+        faceRotation (1,3) double {mustBeNormalized} = [1,0,0]
+        triangulation = []
       end
       %HEXAGONALPRISM Construct an instance of this class
 
@@ -30,13 +29,13 @@ classdef HexagonalPrism
       obj.radius = radius;
       obj.position = position;
       obj.normal = normal;
-      obj.faceRotation = faceRotation;
       obj.area = 3/2*sqrt(3)*obj.radius^2;
+      obj.faceRotation = faceRotation;
       obj.volume = obj.area * obj.thickness;
 
       if ~isa(triangulation,'triangulation')
-          msg = [...
-              'Invalid triangulation argument passed to HexagonalPrism constructor.'];
+          msg = ...
+              'Invalid triangulation argument passed to HexagonalPrism constructor.';
           error(msg);
       end
       obj.triangulation = triangulation;
