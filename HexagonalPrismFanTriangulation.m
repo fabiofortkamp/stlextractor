@@ -51,7 +51,37 @@ classdef HexagonalPrismFanTriangulation
 
             % Combine all vertices
             obj.Points = [bottomFace; topFace];  % 12 vertices total
+            % Define triangular faces
+            faces = [];
 
+            % Bottom face triangles (vertices 1-6)
+            for i = 1:4
+                faces = [faces; 1, i+1, i+2];
+            end
+
+            % Side faces (rectangular faces split into triangles)
+            for i = 1:6
+                next_i = mod(i, 6) + 1;
+
+                % Bottom vertex indices
+                v1 = i;
+                v2 = next_i;
+
+                % Top vertex indices
+                v3 = i + 6;
+                v4 = next_i + 6;
+
+                % Two triangles per rectangular face
+                faces = [faces; v1,  v3,v4];  % First triangle
+                faces = [faces; v1, v4, v2];  % Second triangle
+            end
+
+                        % Top face triangles (vertices 7-12)
+            for i = 1:4
+                faces = [faces; 7, i+7, i+8];
+            end
+
+            obj.ConnectivityList = faces;
 
 
         end

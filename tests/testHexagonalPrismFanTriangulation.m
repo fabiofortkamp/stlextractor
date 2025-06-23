@@ -16,51 +16,85 @@ classdef testHexagonalPrismFanTriangulation < matlab.unittest.TestCase
             testCase.verifyInstanceOf(actual_obj,"triangulation");
         end
 
-       function test_HexagonalPrismFanTriangulation_correct_shape(testCase,position,radius,thickness,normal)
+        function test_HexagonalPrismFanTriangulation_correct_shape(testCase,position,radius,thickness,normal)
 
             % Exercise the function HexagonalPrismFanTriangulation
             actual_obj = HexagonalPrismFanTriangulation(position, radius, thickness, normal);
             testCase.verifySize(actual_obj.Points,[12,3]);
             testCase.verifySize(actual_obj.ConnectivityList,[20,3]);
-       end
-       
-       function test_HPFTR_calculates_vertices(testCase,position,radius,thickness,normal)
-        TR = HexagonalPrismFanTriangulation(position, radius, thickness, normal);
-
-        position = position(:)';  % Ensure row vector
-        normal = normal(:)' / norm(normal);  % Normalize and ensure row vector
-
-        % Create local coordinate system
-        % Find two orthogonal vectors perpendicular to normal
-        if abs(normal(3)) < 0.9
-            u = cross(normal, [0, 0, 1]);
-        else
-            u = cross(normal, [1, 0, 0]);
-        end
-        u = u / norm(u);
-        v = cross(normal, u);
-
-        % Generate hexagon vertices in local 2D coordinates
-        angles = (0:5) * pi/3;  % 60-degree increments
-        hexU = radius * cos(angles);
-        hexV = radius * sin(angles);
-
-
-
-        % Transform hexagon to 3D space
-        hex3D = zeros(6, 3);
-        for i = 1:6
-            hex3D(i, :) = hexU(i) * u + hexV(i) * v;
         end
 
-        % Create vertices for both faces
-        offset = (thickness / 2) * normal;
-        topFace = hex3D + offset + position;
-        bottomFace = hex3D - offset + position;
+        function test_HPFTR_calculates_vertices(testCase,position,radius,thickness,normal)
+            TR = HexagonalPrismFanTriangulation(position, radius, thickness, normal);
 
-        % Combine all vertices
-        vertices = [bottomFace; topFace];  % 12 vertices total
-        testCase.verifyEqual(vertices,TR.Points);
-       end
+            position = position(:)';  % Ensure row vector
+            normal = normal(:)' / norm(normal);  % Normalize and ensure row vector
+
+            % Create local coordinate system
+            % Find two orthogonal vectors perpendicular to normal
+            if abs(normal(3)) < 0.9
+                u = cross(normal, [0, 0, 1]);
+            else
+                u = cross(normal, [1, 0, 0]);
+            end
+            u = u / norm(u);
+            v = cross(normal, u);
+
+            % Generate hexagon vertices in local 2D coordinates
+            angles = (0:5) * pi/3;  % 60-degree increments
+            hexU = radius * cos(angles);
+            hexV = radius * sin(angles);
+
+
+
+            % Transform hexagon to 3D space
+            hex3D = zeros(6, 3);
+            for i = 1:6
+                hex3D(i, :) = hexU(i) * u + hexV(i) * v;
+            end
+
+            % Create vertices for both faces
+            offset = (thickness / 2) * normal;
+            topFace = hex3D + offset + position;
+            bottomFace = hex3D - offset + position;
+
+            % Combine all vertices
+            vertices = [bottomFace; topFace];  % 12 vertices total
+            testCase.verifyEqual(vertices,TR.Points);
+        end
+
+        function test_HPFTR_calculates_faces(testCase,position,radius,thickness,normal)
+            % Define triangular faces
+            TR = HexagonalPrismFanTriangulation(position, radius, thickness, normal);
+
+            testCase.verifyEqual(...
+                TR.ConnectivityList, ...
+                [...
+                1,2,3;...
+                1,3,4;...
+                1,4,5;
+                1,5,6;
+                1,7,8;
+                1,8,2;
+                2,8,9;
+                2,9,3;
+                3,9,10;
+                3,10,4;
+                4,10,11;
+                4,11,5;
+                5,11,12;
+                5,12,6;
+                6,12,7;
+                6,7,1;
+                7,8,9;
+                7,9,10;
+                7,10,11;
+                7,11,12;
+                ]...
+            )
+
+
+
+        end
     end
 end
