@@ -36,7 +36,7 @@ classdef HexagonalPrism
       if ~isa(triangulation,'triangulation')
           msg = ...
               'Invalid triangulation argument passed to HexagonalPrism constructor.';
-          error(msg);
+          error("STLExtractor:HexagonalPrism:inputError",msg);
       end
       obj.triangulation = triangulation;
       obj.vertices = obj.triangulation.Points;
