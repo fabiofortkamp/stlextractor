@@ -28,8 +28,16 @@ classdef HexagonalPrism
       obj.thickness = thickness;
       obj.radius = radius;
       obj.position = position;
+      if norm(normal) < eps
+          error("STLExtractor:HexagonalPrism:nullVectorInputError",...
+              "`normal` argument to HexagonalPrism must have non-zero norm.")
+      end
       obj.normal = normal./norm(normal);
       obj.area = 3/2*sqrt(3)*obj.radius^2;
+      if norm(faceRotation) < eps
+          error("STLExtractor:HexagonalPrism:nullVectorInputError",...
+              "`faceRotation` argument to HexagonalPrism must have non-zero norm.")
+      end
       obj.faceRotation = faceRotation ./ norm(faceRotation);
       obj.volume = obj.area * obj.thickness;
 
