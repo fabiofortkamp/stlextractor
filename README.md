@@ -24,8 +24,25 @@ up different parameters.
 ## Usage
 
 See an example [Live Script](./docs/tutorials/Tutorial1_Extract.mlx) for examples of using
-the package.
+the package (you need to add the [tutorials](./docs/tutorials/) folder to the MATLAB
+path for it to run correctly, or to change the current folder to this path).
 
 ## Testing
 
 Run `runtests("tests")` in the MATLAB Command Window to run the test suite.
+
+## I/O
+
+To automate the extraction process and integrate with other programs,
+you can use the `STLextractToJSON(input,output)`, which will:
+
+- read a STL file `input`;
+- process it;
+- serialize the information about the extracted particles in `output`
+
+The intended usage is to run from the command line (after installting the package
+according to the instructions above):
+
+```shell
+matlab -batch "STLextractToJSON(input.stl,output.json)"
+```
