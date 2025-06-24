@@ -1,11 +1,15 @@
 classdef PackingFigureRenderer < handle
     %PACKINGFIGURERENDERER Renderer class for visualizing hexagonal prism packings
+    %
+    % Instances of this class provide instances of EXTRACTEDPACKING with configuration
+    % on how to plot the packing.
+    %
+    % This class was designed with the help of Claude AI.
     
     properties (Access = private)
-        
-        colorMap containers.Map
-        colorScheme (:,3) double
-        colorIndex (1,1) double = 0
+        colorMap containers.Map % a mapping of char vectors to a row of `colorScheme` (see below)
+        colorScheme (:,3) double % a matrix of possible RGB vectors to color the particles
+        colorIndex (1,1) double = 0 % current row of the matrix above
     end
     
     methods

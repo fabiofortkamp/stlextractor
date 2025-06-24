@@ -1,6 +1,10 @@
 classdef ExtractedPacking < handle
     %EXTRACTEDPACKING Packing of particles extracted from some mesh file
 
+    properties
+        renderer (1,1) PackingFigureRenderer
+    end
+
     properties (SetAccess = private)
         items (1,:) HexagonalPrism
         xmin (1,1) double
@@ -38,6 +42,7 @@ classdef ExtractedPacking < handle
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
+            obj.renderer = PackingFigureRenderer;
         end
 
         function outputArg = length(obj)
@@ -56,6 +61,7 @@ classdef ExtractedPacking < handle
             f = figure;
             f.Units = "centimeters";
             f.Position(3:4) = [16,9];
+            r = obj.renderer;
             hold on
 
             axis equal
@@ -66,10 +72,11 @@ classdef ExtractedPacking < handle
             zlabel("z");
 
             for i = 1:length(obj)
-                TR = obj.items(i).triangulation;
+                hp = obj.items(i);
+                TR = hp.triangulation;
                 T = TR.ConnectivityList;
                 P = TR.Points;
-                trisurf(T,P(:,1),P(:,2),P(:,3),"FaceColor","blue",'linestyle','none','facealpha',1)
+                trisurf(T,P(:,1),P(:,2),P(:,3),"FaceColor",r.colorOf(hp),'linestyle','none','facealpha',1)
             end
 
             hold off
