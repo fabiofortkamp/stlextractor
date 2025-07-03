@@ -35,14 +35,30 @@ classdef ExtractedPacking < handle
 
 
     methods
-        function obj = ExtractedPacking(prisms)
+        function obj = ExtractedPacking(prisms,options)
             %EXTRACTEDPACKING Construct an instance of this class
+            %
+            %   ep = EXTRACTEDPACKING(prisms) will create a packing from a given
+            %       array of HEXAGONALPRISM objects. By default, the extracted packing
+            %       will filter out the prisms whose z-position is less than zero.
+            %
+            %       This behavious can be disabled by passing the "RemoveOutlierRangez"
+            %       as false. The actual value of z below which prisms will be removed
+            %       can be set with the "OutlierZThreshold" option.
             arguments
                 prisms (1,:) HexagonalPrism
+                options.RemoveOutlierRangeZ (1,1) logical = true
+                options.OutlierZThreshold (1,1) double = 0
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
             obj.renderer = PackingFigureRenderer;
+
+            if options.RemoveOutlierRangeZ
+                if obj.zmin < options.OutlierZThreshold
+                    obj = obj.filterPacking("z",options.OutlierZThreshold,obj.zmax);
+                end
+            end
         end
 
         function outputArg = length(obj)
@@ -202,7 +218,7 @@ classdef ExtractedPacking < handle
             end
             indx = find(hexagonPositionsMin(:,ax) > vmin & hexagonPositionsMax(:,ax) < vmax);
             nl = pre(indx);
-            ep = ExtractedPacking(nl);
+            ep = ExtractedPacking(nl,"RemoveOutlierRangeZ",false);
         end
 
         function out = averageAlignment(obj,direction)
