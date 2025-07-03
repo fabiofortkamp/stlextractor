@@ -44,5 +44,13 @@ The intended usage is to run from the command line (after installting the packag
 according to the instructions above):
 
 ```shell
-matlab -batch "STLextractToJSON(input.stl,output.json)"
+matlab -batch 'STLextractToJSON("input.stl","output.json")'
+```
+
+You can also specify the `cutoff` and `cutoffDirection` parameters, which will
+extract an inner packing. If `cutoff` is 0, nothing is done. The default direction
+is along the x-axis. Example usage:
+
+```shell
+matlab -batch 'STLextractToJSON("input.stl","output.json",0.1,"y")'
 ```
