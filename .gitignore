@@ -36,3 +36,4 @@ codegen/
 .buildtool/
 
 .DS_Store
+.vscode/settings.json
