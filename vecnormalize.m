@@ -3,8 +3,6 @@ function out = vecnormalize(in)
     arguments
         in (1,:) double {mustBeFinite}
     end
-    if isapprox(norm(in),0.0)
-        error("Input to vecnormalize must have non-zero norm")
-    end
+    STLExtractorError.mustBeNonZeroNorm(in, "input vector");
     out = in ./ norm(in);
 end

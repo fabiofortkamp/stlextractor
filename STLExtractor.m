@@ -52,13 +52,19 @@ classdef STLExtractor < handle
 
         end
 
-        function ep = process(obj)
+        function ep = process(obj,options)
             %PROCESS Run the extraction process, returning the extracted information
+            arguments
+                obj STLExtractor
+                options.RemoveOutlierRangeZ (1,1) logical = false
+                options.OutlierZThreshold (1,1) double = 0.0
+                options.BoundingBoxLength (1,1) double = NaN
+            end
 
             [Packing,geometricInfo] = obj.AnalyzeSTL;
 
             l = HexagonalPrism.empty;
-            
+
 
             for iParticle = 1:obj.nParticles
                 position = geometricInfo(iParticle).center;
@@ -68,11 +74,14 @@ classdef STLExtractor < handle
                 faceRotation = Packing.AllTheAxes2{iParticle};
                 triangulation = geometricInfo(iParticle).TR;
                 l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation,triangulation);
-                
+
             end
 
-            ep = ExtractedPacking(l);
-           
+            ep = ExtractedPacking(l, ...
+                'RemoveOutlierRangeZ', options.RemoveOutlierRangeZ, ...
+                'OutlierZThreshold', options.OutlierZThreshold, ...
+                'BoundingBoxLength', options.BoundingBoxLength);
+
 
         end
     end
@@ -270,7 +279,7 @@ classdef STLExtractor < handle
             end
 
 
-            localPoints = (localPoints-xC) + xC ;  
+            localPoints = (localPoints-xC) + xC ;
             Tri2 = triangulation(localTriangles,localPoints) ;
             center = xC(1,:);
             xC = mean(localPoints,1) ;
