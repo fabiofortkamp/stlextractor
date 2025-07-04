@@ -7,6 +7,6 @@ function v = getDirectionVector(direction)
                 case "z"
                     v = [0,0,1];
                 otherwise
-                    error("Unsupported direction; must be one of x, y or z.")
+                    STLExtractorError.mustBeValidDirection(direction)
             end
 end

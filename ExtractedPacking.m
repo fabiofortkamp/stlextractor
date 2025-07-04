@@ -47,8 +47,9 @@ classdef ExtractedPacking < handle
             %       can be set with the "OutlierZThreshold" option.
             arguments
                 prisms (1,:) HexagonalPrism
-                options.RemoveOutlierRangeZ (1,1) logical = true
+                options.RemoveOutlierRangeZ (1,1) logical = false
                 options.OutlierZThreshold (1,1) double = 0
+                options.BoundingBoxLength (1,1) double = NaN
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
@@ -57,6 +58,19 @@ classdef ExtractedPacking < handle
             if options.RemoveOutlierRangeZ
                 if obj.zmin < options.OutlierZThreshold
                     obj = obj.filterPacking("z",options.OutlierZThreshold,obj.zmax);
+                end
+            end
+
+            % apply bounding box length filter
+            if ~isnan(options.BoundingBoxLength)
+                xlim = options.BoundingBoxLength/2;
+                if (obj.xmax > xlim) || (obj.xmin < -xlim)
+                    obj = obj.filterPacking("x",-xlim,xlim);
+                end
+                % we can use the same xlim for y, because we assume
+                % that the packing is roughly cubic
+                if (obj.ymax > xlim) || (obj.ymin < -xlim)
+                    obj = obj.filterPacking("y",-xlim,xlim);
                 end
             end
         end
@@ -114,7 +128,8 @@ classdef ExtractedPacking < handle
                 case "z"
                     Lnew = obj.Lz*(1-margin);
                 otherwise
-                    error("Unrecognized direction to start cutoff process")
+                    STLExtractorError.throwError('ExtractedPacking', 'InvalidDirection', ...
+                        'Unrecognized direction to start cutoff process')
             end
 
             dx = (obj.Lx - Lnew)/2;
@@ -217,6 +232,10 @@ classdef ExtractedPacking < handle
                     ax = 3;
             end
             indx = find(hexagonPositionsMin(:,ax) > vmin & hexagonPositionsMax(:,ax) < vmax);
+            if isempty(indx)
+                STLExtractorError.throwError('ExtractedPacking', 'NoParticlesInRange', ...
+                    sprintf('No particles found in the specified %s range (%.3g, %.3g).', direction, vmin, vmax));
+            end
             nl = pre(indx);
             ep = ExtractedPacking(nl,"RemoveOutlierRangeZ",false);
         end
@@ -243,7 +262,7 @@ classdef ExtractedPacking < handle
             alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
             weights = arrayfun(@(hp) hp.volume,obj.items);
             % we need the conversion factor below because our definition
-            % use the cube volume, and not the total volume, in the 
+            % use the cube volume, and not the total volume, in the
             % denominator
             out = mean(alignments,"Weights",weights)*obj.volumetricFillingFraction;
         end
@@ -255,7 +274,7 @@ classdef ExtractedPacking < handle
             alignments = arrayfun(@(hp) dot(hp.normal,v),obj.items);
             weights = arrayfun(@(hp) hp.volume,obj.items);
             % we need the conversion factor below because our definition
-            % use the cube volume, and not the total volume, in the 
+            % use the cube volume, and not the total volume, in the
             % denominator
             out = std(alignments,weights)*sqrt(obj.volumetricFillingFraction);
         end
