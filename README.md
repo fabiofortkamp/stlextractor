@@ -1,13 +1,14 @@
-# stlextractor
+# stlextractor - version 0.7.0
 
-MATLAB package to process a large STL file containing multiple hexagonal prisms 
+
+MATLAB package to process a large STL file containing multiple hexagonal prisms
 (the only supported form at the moment) and parse each prism, identifying its geometric
-parameters such as radius, axis, volume etc. 
+parameters such as radius, axis, volume etc.
 
 Each individual prism can then be imported to its own STL file, or have their info
 available to other MATLAB programs.
 
-Motivation: we want to simulate packing of particles, but want to assign different 
+Motivation: we want to simulate packing of particles, but want to assign different
 properties to each prism. With `STLExtractor`, we can generate the packing
 in a geometric modeling software, and have the library parse this purely geometric info;
 the individual objects can then be part of a MATLAB project that recognizes the orientation, radius
@@ -41,16 +42,58 @@ you can use the `STLextractToJSON(input,output)`, which will:
 - serialize the information about the extracted particles in `output`
 
 The intended usage is to run from the command line (after installting the package
-according to the instructions above):
+according to the instructions above).  In the simplest case, to just read a STL file
+and write the output to a JSON file, you can use the following command:
 
 ```shell
 matlab -batch 'STLextractToJSON("input.stl","output.json")'
 ```
 
-You can also specify the `cutoff` and `cutoffDirection` parameters, which will
-extract an inner packing. If `cutoff` is 0, nothing is done. The default direction
-is along the x-axis. Example usage:
+The first argument must be an existing STL file, and the second must be in a writable
+directory. The output file will contain a JSON encoding of the `ExtractedPacking` object.
+
+By default, this command does some post-processing: all particles that have any vertices
+below the $z=0$ plane are removed. To control this behavior, you can
+pass additional options:
 
 ```shell
-matlab -batch 'STLextractToJSON("input.stl","output.json",0.1,"y")'
+matlab -batch 'STLextractToJSON("input.stl","output.json","RemoveOutlierRangeZ", false)'
 ```
+
+If, on the other hand, you want to keep this behaviour, but want to specify another
+threshold for the z-coordinate, you can do so by passing the `OutlierZThreshold` parameter:
+
+```shell
+matlab -batch 'STLextractToJSON("input.stl","output.json","OutlierZThreshold",0.1)'
+```
+
+If `"RemoveOutlierRangeZ"` is `false`, the `OutlierZThreshold` parameter is ignored.
+
+To simulate similar behaviour in the $x$ and $y$ directions, you can use the
+`"BoundingBoxLength"` parameter, which will remove all particles that have
+any vertices outside the bounding box of the given length in the $x$ and $y$
+directions. This assumes the packing is centered at the origin, and the bounding box
+is symmetric around the origin. Example usage:
+
+```shell
+matlab -batch 'STLextractToJSON("input.stl","output.json","BoundingBoxLength",0.5)'
+```
+
+For instance, all particles that have any vertices with $x$ or $y$ coordinates
+greater than 0.25 or less than -0.25 will be removed. A parameter of `NaN`
+will disable this behavior, and all particles will be kept regardless of their
+$x$ and $y$ coordinates.
+
+You can also specify the `cutoff` and `cutoffDirection` parameters, which will
+extract an inner packing, but by specifying a margin percentage to remove,
+instead of a fixed distance. For instance:
+
+```shell
+matlab -batch 'STLextractToJSON("input.stl","output.json","Cutoff",0.1,"CutoffDirection","y")'
+```
+
+This will remove all particles that have any vertices with $y$ coordinates that faill
+outside of a bounding box of length 90% of the original packing in the $y$ direction.
+This length will then be applied to the $x$ and $z$ directions as well.
+
+If the `Cutoff` is 0, nothing is done.
