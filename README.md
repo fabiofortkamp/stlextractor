@@ -79,7 +79,9 @@ matlab -batch 'STLextractToJSON("input.stl","output.json","BoundingBoxLength",0.
 ```
 
 For instance, all particles that have any vertices with $x$ or $y$ coordinates
-greater than 0.25 or less than -0.25 will be removed.
+greater than 0.25 or less than -0.25 will be removed. A parameter of `NaN`
+will disable this behavior, and all particles will be kept regardless of their
+$x$ and $y$ coordinates.
 
 You can also specify the `cutoff` and `cutoffDirection` parameters, which will
 extract an inner packing, but by specifying a margin percentage to remove,
@@ -92,3 +94,5 @@ matlab -batch 'STLextractToJSON("input.stl","output.json","Cutoff",0.1,"CutoffDi
 This will remove all particles that have any vertices with $y$ coordinates that faill
 outside of a bounding box of length 90% of the original packing in the $y$ direction.
 This length will then be applied to the $x$ and $z$ directions as well.
+
+If the `Cutoff` is 0, nothing is done.
