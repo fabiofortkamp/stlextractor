@@ -1,4 +1,5 @@
-# stlextractor
+# stlextractor - version 0.7.0
+
 
 MATLAB package to process a large STL file containing multiple hexagonal prisms
 (the only supported form at the moment) and parse each prism, identifying its geometric
