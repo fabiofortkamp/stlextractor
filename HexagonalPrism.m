@@ -28,16 +28,10 @@ classdef HexagonalPrism
       obj.thickness = thickness;
       obj.radius = radius;
       obj.position = position;
-      if norm(normal) < eps
-          error("STLExtractor:HexagonalPrism:nullVectorInputError",...
-              "`normal` argument to HexagonalPrism must have non-zero norm.")
-      end
+      STLExtractorError.mustBeNonZeroNorm(normal, "normal");
       obj.normal = normal./norm(normal);
       obj.area = 3/2*sqrt(3)*obj.radius^2;
-      if norm(faceRotation) < eps
-          error("STLExtractor:HexagonalPrism:nullVectorInputError",...
-              "`faceRotation` argument to HexagonalPrism must have non-zero norm.")
-      end
+      STLExtractorError.mustBeNonZeroNorm(faceRotation, "faceRotation");
       obj.faceRotation = faceRotation ./ norm(faceRotation);
       obj.volume = obj.area * obj.thickness;
 
@@ -45,11 +39,7 @@ classdef HexagonalPrism
           triangulation = HexagonalPrismFanTriangulation(position,radius,thickness,obj.normal);
       end
 
-      if ~isa(triangulation,'triangulation')
-          msg = ...
-              'Invalid triangulation argument passed to HexagonalPrism constructor.';
-          error("STLExtractor:HexagonalPrism:inputError",msg);
-      end
+      STLExtractorError.mustBeValidTriangulation(triangulation, "HexagonalPrism constructor");
       obj.triangulation = triangulation;
       obj.vertices = obj.triangulation.Points;
     end

@@ -128,7 +128,8 @@ classdef ExtractedPacking < handle
                 case "z"
                     Lnew = obj.Lz*(1-margin);
                 otherwise
-                    error("Unrecognized direction to start cutoff process")
+                    STLExtractorError.throwError('ExtractedPacking', 'InvalidDirection', ...
+                        'Unrecognized direction to start cutoff process')
             end
 
             dx = (obj.Lx - Lnew)/2;
@@ -231,6 +232,10 @@ classdef ExtractedPacking < handle
                     ax = 3;
             end
             indx = find(hexagonPositionsMin(:,ax) > vmin & hexagonPositionsMax(:,ax) < vmax);
+            if isempty(indx)
+                STLExtractorError.throwError('ExtractedPacking', 'NoParticlesInRange', ...
+                    sprintf('No particles found in the specified %s range (%.3g, %.3g).', direction, vmin, vmax));
+            end
             nl = pre(indx);
             ep = ExtractedPacking(nl,"RemoveOutlierRangeZ",false);
         end
