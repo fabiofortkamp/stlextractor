@@ -115,10 +115,15 @@ classdef ExtractedPacking < handle
 
 
 
-        function ep = cutoff(obj,margin,startDirection)
+        function ep = cutoff(obj,margin,startDirection,options)
             %CUTOFF Create cutoff of another packing, starting by subtracting a margin
-            % from startDirection
-
+            % from startDirection.
+            arguments
+                obj 
+                margin (1,1) double % Fraction of the side length to remove
+                startDirection (1,1) string {mustBeMember(startDirection, ["x","y","z"])} = "x"; % From which direction to start cutting
+                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+            end
 
             switch startDirection
                 case "x"
@@ -146,16 +151,20 @@ classdef ExtractedPacking < handle
 
 
 
-            ep = filterPacking(obj,"x",xminpost,xmaxpost);
-            ep = filterPacking(ep,"y",yminpost,ymaxpost);
-            ep = filterPacking(ep,"z",zminpost,zmaxpost);
+            ep = filterPacking(obj,"x",xminpost,xmaxpost, "Method",options.Method);
+            ep = filterPacking(ep,"y",yminpost,ymaxpost, "Method",options.Method);
+            ep = filterPacking(ep,"z",zminpost,zmaxpost, "Method",options.Method);
 
 
 
         end
 
-        function ep = cutoffz(obj)
+        function ep = cutoffz(obj,options)
             %CUTOFFZ Create cutoff of packing by trimming in the z-direction to make it cube-like.
+            arguments
+                obj 
+                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+            end
             Lznew = 0.5*(obj.Lx + obj.Ly);
 
             dz = (obj.Lz - Lznew)/2;
@@ -163,7 +172,7 @@ classdef ExtractedPacking < handle
             zmaxpost = obj.zmax - dz;
             zminpost = obj.zmin + dz;
 
-            ep = filterPacking(obj,"z",zminpost,zmaxpost);
+            ep = filterPacking(obj,"z",zminpost,zmaxpost,"Method",options.Method);
 
         end
 
@@ -223,7 +232,14 @@ classdef ExtractedPacking < handle
 
         end
 
-        function ep = filterPacking(obj,direction,vmin,vmax)
+        function ep = filterPacking(obj,direction,vmin,vmax,options)
+           arguments
+                obj 
+                direction (1,1) string {mustBeMember(direction, ["x","y","z"])} = "x"; % From which direction to start cutting
+                vmin (1,1) double = 0; % minimum value of the "direction" above, above which items will remain
+                vmax (1,1) double = 0; % maximum value of the "direction" above, below which items will remain
+                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+            end
             pre = obj.items;
             nHexagons = numel(pre);
             hexagonPositionsMin = zeros(nHexagons,3);
@@ -231,8 +247,13 @@ classdef ExtractedPacking < handle
             for iPrism = 1:length(obj)
                 hp = obj.items(iPrism);
                 for j = [1,2,3]
-                    hexagonPositionsMin(iPrism,j) = min(hp.vertices(:,j));
-                    hexagonPositionsMax(iPrism,j) = max(hp.vertices(:,j));
+                    if strcmp(options.Method, "vertices")
+                        hexagonPositionsMin(iPrism,j) = min(hp.vertices(:,j));
+                        hexagonPositionsMax(iPrism,j) = max(hp.vertices(:,j));
+                    else
+                       hexagonPositionsMin(iPrism,j) = hp.position(j);
+                       hexagonPositionsMax(iPrism,j) = hp.position(j);
+                    end
                 end
             end
 
@@ -244,7 +265,7 @@ classdef ExtractedPacking < handle
                 case "z"
                     ax = 3;
             end
-            indx = find(hexagonPositionsMin(:,ax) > vmin & hexagonPositionsMax(:,ax) < vmax);
+            indx = find(hexagonPositionsMin(:,ax) >= vmin & hexagonPositionsMax(:,ax) <= vmax);
             if isempty(indx)
                 STLExtractorError.throwError('ExtractedPacking', 'NoParticlesInRange', ...
                     sprintf('No particles found in the specified %s range (%.3g, %.3g).', direction, vmin, vmax));
