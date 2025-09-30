@@ -121,7 +121,7 @@ classdef ExtractedPacking < handle
             arguments
                 obj 
                 margin (1,1) double % Fraction of the side length to remove
-                startDirection (1,1) string {mustBeMember(startDirection, ["x","y","z"])} = "x"; % From which direction to start cutting
+                startDirection (1,1) string {mustBeMember(startDirection, ["x","y","z"])} = "x" % From which direction to start cutting
                 options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
             end
 
