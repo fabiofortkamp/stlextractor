@@ -10,16 +10,19 @@ classdef PackingFigureRenderer < handle
         colorMap containers.Map % a mapping of char vectors to a row of `colorScheme` (see below)
         colorScheme (:,3) double % a matrix of possible RGB vectors to color the particles
         colorIndex (1,1) double = 0 % current row of the matrix above
+        prisms (1,:) HexagonalPrism
     end
 
     methods
-        function obj = PackingFigureRenderer
+        function obj = PackingFigureRenderer(prisms)
             %PACKINGFIGURERENDERER Construct an instance of this class
 
 
             % Initialize color map and scheme
             obj.colorMap = containers.Map();
             obj.colorScheme = obj.getCategoricalColorScheme();
+            obj.prisms = prisms;
+            obj.buildColorTable;
         end
 
         function color = colorOf(obj, hexPrism)
@@ -32,22 +35,11 @@ classdef PackingFigureRenderer < handle
                 obj PackingFigureRenderer
                 hexPrism HexagonalPrism
             end
-
+            
             % Create unique key based on radius and thickness
             key = sprintf('r%.6f_t%.6f', hexPrism.radius, hexPrism.thickness);
 
-            % Check if we already have a color for this prism type
-            if isKey(obj.colorMap, key)
-                color = obj.colorMap(key);
-            else
-                % Assign new color from scheme
-                obj.colorIndex = obj.colorIndex + 1;
-                colorIdx = mod(obj.colorIndex - 1, size(obj.colorScheme, 1)) + 1;
-                color = obj.colorScheme(colorIdx, :);
-
-                % Store in map
-                obj.colorMap(key) = color;
-            end
+            color = obj.colorMap(key);
         end
     end
 
@@ -76,6 +68,30 @@ classdef PackingFigureRenderer < handle
                 1.0000, 0.8000, 0.2000;  % Bright Yellow
                 0.8000, 0.2000, 1.0000;  % Bright Magenta
                 ];
+        end
+    
+        function buildColorTable(obj)
+            
+            % Sort the prisms array by the radius of each element
+            [~, sortedIndices] = sort([obj.prisms.radius]);
+            obj.prisms = obj.prisms(sortedIndices);
+            % Create unique key based on radius and thickness
+            for hexPrism = obj.prisms
+                key = sprintf('r%.6f_t%.6f', hexPrism.radius, hexPrism.thickness);
+    
+                % Check if we already have a color for this prism type
+                if isKey(obj.colorMap, key)
+                    
+                else
+                    % Assign new color from scheme
+                    obj.colorIndex = obj.colorIndex + 1;
+                    colorIdx = mod(obj.colorIndex - 1, size(obj.colorScheme, 1)) + 1;
+                    color = obj.colorScheme(colorIdx, :);
+    
+                    % Store in map
+                    obj.colorMap(key) = color;
+                end
+            end
         end
     end
 end

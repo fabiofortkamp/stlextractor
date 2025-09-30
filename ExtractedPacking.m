@@ -2,7 +2,7 @@ classdef ExtractedPacking < handle
     %EXTRACTEDPACKING Packing of particles extracted from some mesh file
 
     properties
-        renderer (1,1) PackingFigureRenderer
+        renderer
     end
 
     properties (SetAccess = private)
@@ -53,7 +53,7 @@ classdef ExtractedPacking < handle
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
-            obj.renderer = PackingFigureRenderer;
+            obj.renderer = PackingFigureRenderer(prisms);
 
             if options.RemoveOutlierRangeZ
                 if obj.zmin < options.OutlierZThreshold
