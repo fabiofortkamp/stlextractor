@@ -1,4 +1,4 @@
-# stlextractor - version 0.7.0
+# stlextractor - version 0.8.0
 
 
 MATLAB package to process a large STL file containing multiple hexagonal prisms

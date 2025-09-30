@@ -154,6 +154,19 @@ classdef ExtractedPacking < handle
 
         end
 
+        function ep = cutoffz(obj)
+            %CUTOFFZ Create cutoff of packing by trimming in the z-direction to make it cube-like.
+            Lznew = 0.5*(obj.Lx + obj.Ly);
+
+            dz = (obj.Lz - Lznew)/2;
+
+            zmaxpost = obj.zmax - dz;
+            zminpost = obj.zmin + dz;
+
+            ep = filterPacking(obj,"z",zminpost,zmaxpost);
+
+        end
+
     end
 
     methods (Access = private)
