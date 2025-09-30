@@ -159,8 +159,12 @@ classdef ExtractedPacking < handle
 
         end
 
-        function ep = cutoffz(obj)
+        function ep = cutoffz(obj,options)
             %CUTOFFZ Create cutoff of packing by trimming in the z-direction to make it cube-like.
+            arguments
+                obj 
+                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+            end
             Lznew = 0.5*(obj.Lx + obj.Ly);
 
             dz = (obj.Lz - Lznew)/2;
@@ -168,7 +172,7 @@ classdef ExtractedPacking < handle
             zmaxpost = obj.zmax - dz;
             zminpost = obj.zmin + dz;
 
-            ep = filterPacking(obj,"z",zminpost,zmaxpost);
+            ep = filterPacking(obj,"z",zminpost,zmaxpost,"Method",options.Method);
 
         end
 
