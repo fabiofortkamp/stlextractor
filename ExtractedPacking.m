@@ -155,9 +155,7 @@ classdef ExtractedPacking < handle
         end
 
         function ep = cutoffz(obj)
-            %CUTOFFZ Create cutoff of another packing by cutting in the 
-            %   "z"-direction until the resulting packing is cubic-like.
-
+            %CUTOFFZ Create cutoff of packing by trimming in the z-direction to make it cube-like.
             Lznew = 0.5*(obj.Lx + obj.Ly);
 
             dz = (obj.Lz - Lznew)/2;
