@@ -251,6 +251,8 @@ classdef ExtractedPacking < handle
                         hexagonPositionsMin(iPrism,j) = min(hp.vertices(:,j));
                         hexagonPositionsMax(iPrism,j) = max(hp.vertices(:,j));
                     else
+                       % For the 'centers' method, both min and max are set to the center position.
+                       % This allows the filtering logic to work uniformly for both methods.
                        hexagonPositionsMin(iPrism,j) = hp.position(j);
                        hexagonPositionsMax(iPrism,j) = hp.position(j);
                     end
