@@ -101,11 +101,15 @@ classdef ExtractedPacking < handle
             ylabel("y");
             zlabel("z");
 
+            centerx = mean([obj.xmin,obj.xmax]);
+            centery = mean([obj.ymin,obj.ymax]);
+            centerz = mean([obj.zmin,obj.zmax]);
+
             for i = 1:length(obj)
                 hp = obj.items(i);
                 TR = hp.triangulation;
                 T = TR.ConnectivityList;
-                P = TR.Points;
+                P = TR.Points - [centerx,centery,centerz];
                 trisurf(T,P(:,1),P(:,2),P(:,3),"FaceColor",r.colorOf(hp),'linestyle','none','facealpha',1)
             end
 
