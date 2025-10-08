@@ -126,7 +126,7 @@ classdef ExtractedPacking < handle
                 obj 
                 margin (1,1) double % Fraction of the side length to remove
                 startDirection (1,1) string {mustBeMember(startDirection, ["x","y","z"])} = "x" % From which direction to start cutting
-                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+                options.Method (1,1) CutoffMethod = CutoffMethod.vertices; % Method to use to select items to cut. If 'vertices', items with any vertice that is beyond the cutplane are removed; if 'centers', then only items whose center are beyond the cut planes are removed.
             end
 
             switch startDirection
@@ -167,8 +167,9 @@ classdef ExtractedPacking < handle
             %CUTOFFZ Create cutoff of packing by trimming in the z-direction to make it cube-like.
             arguments
                 obj 
-                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+                options.Method (1,1) CutoffMethod = CutoffMethod.vertices; % Method to use to select items to cut. If 'vertices', items with any vertice that is beyond the cutplane are removed; if 'centers', then only items whose center are beyond the cut planes are removed.
             end
+
             Lznew = 0.5*(obj.Lx + obj.Ly);
 
             dz = (obj.Lz - Lznew)/2;
@@ -242,8 +243,9 @@ classdef ExtractedPacking < handle
                 direction (1,1) string {mustBeMember(direction, ["x","y","z"])} = "x"; % From which direction to start cutting
                 vmin (1,1) double = 0; % minimum value of the "direction" above, above which items will remain
                 vmax (1,1) double = 0; % maximum value of the "direction" above, below which items will remain
-                options.Method (1,1) string {mustBeMember(options.Method, ["vertices", "centers"])} = "vertices"; % Method to use to select items to cut. If "vertices", items with any vertice that is beyond the cutplane are removed; if "centers", then only items whose center are beyond the cut planes are removed.
+                options.Method (1,1) CutoffMethod = CutoffMethod.vertices; % Method to use to select items to cut. If 'vertices', items with any vertice that is beyond the cutplane are removed; if 'centers', then only items whose center are beyond the cut planes are removed.
             end
+
             pre = obj.items;
             nHexagons = numel(pre);
             hexagonPositionsMin = zeros(nHexagons,3);
@@ -251,7 +253,7 @@ classdef ExtractedPacking < handle
             for iPrism = 1:length(obj)
                 hp = obj.items(iPrism);
                 for j = [1,2,3]
-                    if strcmp(options.Method, "vertices")
+                    if strcmp(options.Method, CutoffMethod.vertices)
                         hexagonPositionsMin(iPrism,j) = min(hp.vertices(:,j));
                         hexagonPositionsMax(iPrism,j) = max(hp.vertices(:,j));
                     else
