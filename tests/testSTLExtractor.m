@@ -86,6 +86,19 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
                 testCase.verifyNotEmpty(l);
 
+        end
+
+       function test_can_cutoff_large_packings(testCase)
+
+                testFileDir = fullfile(projectDir,"tests","test_stl_files");
+                problematicLargeFile = "packing_parameters_20_1_success.stl";
+                filename = fullfile(testFileDir,problematicLargeFile);
+                e = STLExtractor(filename,[],"ShouldSave",false);
+                l = e.process();
+                cutoff = 0.15;
+                ep = l.cutoff(cutoff,"x");
+
+                testCase.verifyNotEmpty(ep);
 
         end
     end
