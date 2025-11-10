@@ -5,7 +5,8 @@ classdef testSTLExtractor < matlab.unittest.TestCase
        nParticles = {48,100,200};
        largeFile = {
            "packing_parameters_5_4_success.stl",...
-           "packing_parameters_15_1_success.stl"}
+           "packing_parameters_15_1_success.stl",...
+           "packing_parameters_20_1_success.stl"}
     end
     methods (Test)
 
