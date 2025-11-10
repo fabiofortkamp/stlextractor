@@ -77,10 +77,8 @@ classdef STLExtractor < handle
 
             end
 
-            ep = ExtractedPacking(l, ...
-                'BoundingBoxLength', options.BoundingBoxLength, ...
-                'ZMinLimit',options.ZMinLimit,...
-                'ZMaxLimit', options.ZMaxLimit);
+            opts = namedargs2cell(options);
+            ep = ExtractedPacking(l, opts{:});
 
 
         end
