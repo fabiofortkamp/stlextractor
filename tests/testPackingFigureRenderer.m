@@ -24,7 +24,7 @@ classdef testPackingFigureRenderer < matlab.unittest.TestCase
 
             % we'd like to be able to retrieve a figure
             % (since coloring only makes sense when plotting)
-            r = PackingFigureRenderer;
+            r = PackingFigureRenderer(hps);
 
             % now we'd like to be able to say something like that:
             testCase.verifyNotEqual( ...
