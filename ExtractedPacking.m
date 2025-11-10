@@ -50,6 +50,7 @@ classdef ExtractedPacking < handle
                 options.RemoveOutlierRangeZ (1,1) logical = false
                 options.OutlierZThreshold (1,1) double = 0
                 options.BoundingBoxLength (1,1) double = NaN
+                options.ZMaxLimit (1,1) double = NaN
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
@@ -72,6 +73,11 @@ classdef ExtractedPacking < handle
                 if (obj.ymax > xlim) || (obj.ymin < -xlim)
                     obj = obj.filterPacking("y",-xlim,xlim);
                 end
+            end
+
+            % remove particles whose z-position are bigger than the prescribed limit
+            if ~isnan(options.ZMaxLimit)
+                obj = obj.filterPacking("z",0,options.ZMaxLimit);
             end
         end
 

@@ -59,6 +59,7 @@ classdef STLExtractor < handle
                 options.RemoveOutlierRangeZ (1,1) logical = false
                 options.OutlierZThreshold (1,1) double = 0.0
                 options.BoundingBoxLength (1,1) double = NaN
+                options.ZMaxLimit (1,1) double = NaN
             end
 
             [Packing,geometricInfo] = obj.AnalyzeSTL;
@@ -80,7 +81,8 @@ classdef STLExtractor < handle
             ep = ExtractedPacking(l, ...
                 'RemoveOutlierRangeZ', options.RemoveOutlierRangeZ, ...
                 'OutlierZThreshold', options.OutlierZThreshold, ...
-                'BoundingBoxLength', options.BoundingBoxLength);
+                'BoundingBoxLength', options.BoundingBoxLength, ...
+                'ZMaxLimit', options.ZMaxLimit);
 
 
         end
