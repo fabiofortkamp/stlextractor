@@ -125,5 +125,6 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 testCase.verifyNotEmpty(ep);
 
         end
+
     end
 end

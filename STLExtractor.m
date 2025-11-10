@@ -56,7 +56,7 @@ classdef STLExtractor < handle
             %PROCESS Run the extraction process, returning the extracted information
             arguments
                 obj STLExtractor
-                options.BoundingBoxLength (1,1) double = NaN
+                options.BoundingBoxLength (1,1) double = NaN % Maximum length of the packing in both the x- and y-directions; will eliminate any particles with abs(x) (or abs(y)) >= +/- BoundingBoxLength/2
                 options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
                 options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
             end
