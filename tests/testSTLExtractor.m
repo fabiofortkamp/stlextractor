@@ -88,6 +88,17 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
         end
 
+        function test_can_process_larger_packings_with_min_z_threshold(testCase,largeFile)
+
+                testFileDir = fullfile(projectDir,"tests","test_stl_files");
+                filename = fullfile(testFileDir,largeFile);
+                e = STLExtractor(filename,[],"ShouldSave",false);
+                l = e.process("ZMinLimit",0.2);
+
+                testCase.verifyNotEmpty(l);
+
+        end
+
         function test_can_cutoff_large_packings_with_disconnected_particles(testCase)
 
                 testFileDir = fullfile(projectDir,"tests","test_stl_files");

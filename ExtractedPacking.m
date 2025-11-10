@@ -39,27 +39,28 @@ classdef ExtractedPacking < handle
             %EXTRACTEDPACKING Construct an instance of this class
             %
             %   ep = EXTRACTEDPACKING(prisms) will create a packing from a given
-            %       array of HEXAGONALPRISM objects. By default, the extracted packing
-            %       will filter out the prisms whose z-position is less than zero.
-            %
-            %       This behavious can be disabled by passing the "RemoveOutlierRangez"
-            %       as false. The actual value of z below which prisms will be removed
-            %       can be set with the "OutlierZThreshold" option.
+            %       array of HEXAGONALPRISM objects. 
             arguments
                 prisms (1,:) HexagonalPrism
-                options.RemoveOutlierRangeZ (1,1) logical = false
-                options.OutlierZThreshold (1,1) double = 0
                 options.BoundingBoxLength (1,1) double = NaN
-                options.ZMaxLimit (1,1) double = NaN
+                options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
+                options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
             end
             obj.items = prisms;
             obj.initializeLimitsAndStatistics;
             obj.renderer = PackingFigureRenderer(prisms);
 
-            if options.RemoveOutlierRangeZ
-                if obj.zmin < options.OutlierZThreshold
-                    obj = obj.filterPacking("z",options.OutlierZThreshold,obj.zmax);
+            % remove particles whose z-position are lower than the prescribed limit
+            if ~isnan(options.ZMinLimit)
+                if obj.zmin < options.ZMinLimit
+                    obj = obj.filterPacking("z",options.ZMinLimit,obj.zmax);
                 end
+            end
+
+
+            % remove particles whose z-position are bigger than the prescribed limit
+            if ~isnan(options.ZMaxLimit)
+                obj = obj.filterPacking("z",0,options.ZMaxLimit);
             end
 
             % apply bounding box length filter
@@ -75,10 +76,6 @@ classdef ExtractedPacking < handle
                 end
             end
 
-            % remove particles whose z-position are bigger than the prescribed limit
-            if ~isnan(options.ZMaxLimit)
-                obj = obj.filterPacking("z",0,options.ZMaxLimit);
-            end
         end
 
         function outputArg = length(obj)
@@ -285,7 +282,7 @@ classdef ExtractedPacking < handle
                     sprintf('No particles found in the specified %s range (%.3g, %.3g).', direction, vmin, vmax));
             end
             nl = pre(indx);
-            ep = ExtractedPacking(nl,"RemoveOutlierRangeZ",false);
+            ep = ExtractedPacking(nl);
         end
 
         function out = averageAlignment(obj,direction)
