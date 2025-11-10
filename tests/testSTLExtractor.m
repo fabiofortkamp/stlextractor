@@ -5,7 +5,8 @@ classdef testSTLExtractor < matlab.unittest.TestCase
        nParticles = {48,100,200};
        largeFile = {
            "packing_parameters_5_4_success.stl",...
-           "packing_parameters_15_1_success.stl"}
+           "packing_parameters_15_1_success.stl",...
+           "packing_parameters_20_1_success.stl"}
     end
     methods (Test)
 
@@ -85,7 +86,45 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
                 testCase.verifyNotEmpty(l);
 
+        end
+
+        function test_can_process_larger_packings_with_min_z_threshold(testCase,largeFile)
+
+                testFileDir = fullfile(projectDir,"tests","test_stl_files");
+                filename = fullfile(testFileDir,largeFile);
+                e = STLExtractor(filename,[],"ShouldSave",false);
+                l = e.process("ZMinLimit",0.2);
+
+                testCase.verifyNotEmpty(l);
 
         end
+
+        function test_can_cutoff_large_packings_with_disconnected_particles(testCase)
+
+                testFileDir = fullfile(projectDir,"tests","test_stl_files");
+
+                % this is a "problematic" file that, in addition of being large in size.
+                % has a couple of particles that are disconected from the main packing
+                % we want to test that we can process and cutoff this, 
+                % if given a suitable z-value, and eliminating particles
+                % whose z-position is larger than that
+                problematicLargeFile = "packing_parameters_20_1_success.stl";
+                filename = fullfile(testFileDir,problematicLargeFile);
+                e = STLExtractor(filename,[],"ShouldSave",false);
+                % bounding-box length, hard-coded from where the given file above
+                % was produced
+                L = 1.0;
+                % this packing was generated assuming a higher bound for the density of
+                % 1.0, but we know from experience that the packings have around 66% 
+                % density. So we can make an estimative of how high is the packing
+                zmax = (1/0.66)*L;
+                l = e.process("ZMaxLimit",zmax);
+                cutoff = 0.15;
+                ep = l.cutoff(cutoff,"x");
+
+                testCase.verifyNotEmpty(ep);
+
+        end
+
     end
 end

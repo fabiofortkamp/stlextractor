@@ -1,9 +1,9 @@
-# stlextractor - version 0.8.0
+# stlextractor - version 0.11.0
 
 
-MATLAB package to process a large STL file containing multiple hexagonal prisms
-(the only supported form at the moment) and parse each prism, identifying its geometric
-parameters such as radius, axis, volume etc.
+MATLAB package to process a large STL file containing a packing of multiple hexagonal 
+prisms (the only supported form at the moment) and parse each prism, 
+identifying its geometric parameters such as radius, axis, volume etc.
 
 Each individual prism can then be imported to its own STL file, or have their info
 available to other MATLAB programs.
@@ -27,6 +27,10 @@ up different parameters.
 See an example [Live Script](./docs/tutorials/Tutorial1_Extract.mlx) for examples of using
 the package (you need to add the [tutorials](./docs/tutorials/) folder to the MATLAB
 path for it to run correctly, or to change the current folder to this path).
+
+The API is class-based. Check out the documentation for the `STLExtractor` class,
+which is the main entry-point for reading an STL file. The result of actually
+parsing and processing the file is an instance of `ExtractedPacking`.
 
 ## Testing
 

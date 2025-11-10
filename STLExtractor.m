@@ -56,9 +56,9 @@ classdef STLExtractor < handle
             %PROCESS Run the extraction process, returning the extracted information
             arguments
                 obj STLExtractor
-                options.RemoveOutlierRangeZ (1,1) logical = false
-                options.OutlierZThreshold (1,1) double = 0.0
-                options.BoundingBoxLength (1,1) double = NaN
+                options.BoundingBoxLength (1,1) double = NaN % Maximum length of the packing in both the x- and y-directions; will eliminate any particles with abs(x) (or abs(y)) >= +/- BoundingBoxLength/2
+                options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
+                options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
             end
 
             [Packing,geometricInfo] = obj.AnalyzeSTL;
@@ -77,10 +77,8 @@ classdef STLExtractor < handle
 
             end
 
-            ep = ExtractedPacking(l, ...
-                'RemoveOutlierRangeZ', options.RemoveOutlierRangeZ, ...
-                'OutlierZThreshold', options.OutlierZThreshold, ...
-                'BoundingBoxLength', options.BoundingBoxLength);
+            opts = namedargs2cell(options);
+            ep = ExtractedPacking(l, opts{:});
 
 
         end
