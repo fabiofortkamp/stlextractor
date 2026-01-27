@@ -131,16 +131,37 @@ classdef STLExtractor < handle
 
 
       n_points = size(obj.globalTriangulation.Points,1) ; % points
-      n_triangles = size(obj.globalTriangulation.ConnectivityList,1) ; % triangles
+      C = obj.globalTriangulation.ConnectivityList;
+      n_triangles = size(C,1) ; % triangles
 
-      A = sparse(n_points,n_points) ;
-      for k=1:n_triangles
-        vertices = obj.globalTriangulation.ConnectivityList(k,:);
-        A(vertices(1),vertices(2)) = 1 ;
-        A(vertices(2),vertices(3)) = 1 ;
-        A(vertices(3),vertices(1)) = 1 ;
+      % C is a matrix like 
+      %
+      % [v1 v2 v3;
+      %  v4 v5 v6]
+      %
+      % where the vi are vertices IDs
+      % and we want to say that points v1-v2 are connected, v2-v3 are connected, and
+      % the same for v3-v1, v4-v5, v5-v6, v6-v1
+      % so:
+      % A(v1,v2) = 1
+      % A(v2,v3) = 1
+      % A(v3,v1) = 1
+      % and similarly for every row (i.e. each triangle)
+      %
+      % to contruct a sparse matrix with this pattern, we gather the rows in order:
+      i = C';
+      i = i(:);
 
-      end
+      % and do the same here, but placing the first column last
+      j = C(:,[2,3,1]);
+      j = j';
+      j = j(:);
+
+      v = ones([3*n_triangles,1]);
+
+      % this construction means that A(i(k),j(k)) = v(k), and the final matrix is
+      % n_points by n_points
+      A = sparse(i,j,v,n_points,n_points);
     end
 
     function [Packing,geometricInfo] = processParticles(obj)
