@@ -51,13 +51,12 @@ classdef PackingFigureRenderer < handle
             % for categorical data visualization
 
             colors = [
-                0.1216, 0.4667, 0.7059;  % Bright Blue
-                1.0000, 0.4980, 0.0549;  % Bright Orange
+                0.8, 0.4, 0.7;  % Bright Pink
+                0.1, 0.8, 0.7;  % Bright Cyan
                 0.1725, 0.6275, 0.1725;  % Bright Green
                 0.8392, 0.1529, 0.1569;  % Bright Red
                 0.5804, 0.4039, 0.7412;  % Bright Purple
                 0.5490, 0.3373, 0.2941;  % Bright Brown
-                0.8902, 0.4667, 0.7608;  % Bright Pink
                 0.4980, 0.4980, 0.4980;  % Bright Gray
                 0.7373, 0.7412, 0.1333;  % Bright Olive
                 0.0902, 0.7451, 0.8118;  % Bright Cyan
