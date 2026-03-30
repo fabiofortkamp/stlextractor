@@ -1,54 +1,50 @@
-classdef HexagonalPrism
-  %HEXAGONALPRISM Representation of a prism with two hexagonal faces
+classdef HexagonalPrism < Prism
+  %HEXAGONALPRISM Prism with two hexagonal faces.
+  %
+  % Backward-compatible subclass of Prism with nSides=6.
+  % The 'radius' and 'thickness' properties are Dependent aliases for
+  % 'circumradius' and 'height' inherited from Prism.
+  %
+  % Constructor signature is identical to the original HexagonalPrism.
+  %
+  % See also PRISM, PARTICLE, HEXAGONALPRISMFANTRIANGULATION
 
-  properties (SetAccess = immutable)
-    thickness (1,1) double
-    volume (1,1) double
-    position (1,3) double 
-    radius (1,1) double
-    normal (1,3) double
-    area (1,1) double
-    faceRotation(1,3) double
-    vertices (12,3) double
-    triangulation
+  properties (Dependent)
+    radius    % alias for circumradius
+    thickness % alias for height
   end
 
   methods
-      function obj = HexagonalPrism(position,radius,thickness,normal,faceRotation,triangulation)
+    function obj = HexagonalPrism(position, radius, thickness, normal, faceRotation, triangulation)
+      %HEXAGONALPRISM Construct an instance of this class.
+      %
+      %   hp = HEXAGONALPRISM(position, radius, thickness, normal)
+      %   hp = HEXAGONALPRISM(position, radius, thickness, normal, faceRotation)
+      %   hp = HEXAGONALPRISM(position, radius, thickness, normal, faceRotation, triangulation)
       arguments
-        position (1,3) double
-        radius (1,1) double {mustBePositive}
-        thickness (1,1) double {mustBePositive}
-        normal  (1,3) double
-        faceRotation (1,3) double = [1,0,0]
+        position     (1,3) double
+        radius       (1,1) double {mustBePositive}
+        thickness    (1,1) double {mustBePositive}
+        normal       (1,3) double
+        faceRotation (1,3) double = [1, 0, 0]
         triangulation = []
       end
-      %HEXAGONALPRISM Construct an instance of this class
 
-      obj.thickness = thickness;
-      obj.radius = radius;
-      obj.position = position;
-      STLExtractorError.mustBeNonZeroNorm(normal, "normal");
-      obj.normal = normal./norm(normal);
-      obj.area = 3/2*sqrt(3)*obj.radius^2;
-      STLExtractorError.mustBeNonZeroNorm(faceRotation, "faceRotation");
-      obj.faceRotation = faceRotation ./ norm(faceRotation);
-      obj.volume = obj.area * obj.thickness;
-
+      % Use HexagonalPrismFanTriangulation to preserve original vertex ordering
       if isempty(triangulation)
-          triangulation = HexagonalPrismFanTriangulation(position,radius,thickness,obj.normal);
+        normalNorm = normal ./ norm(normal);
+        triangulation = HexagonalPrismFanTriangulation(position, radius, thickness, normalNorm);
       end
 
-      STLExtractorError.mustBeValidTriangulation(triangulation, "HexagonalPrism constructor");
-      obj.triangulation = triangulation;
-      obj.vertices = obj.triangulation.Points;
+      obj@Prism(position, 6, radius, thickness, normal, faceRotation, triangulation);
     end
 
-    function write(obj,filename)
-      %WRITE Write the object triangulation to the filename STL file.
+    function r = get.radius(obj)
+      r = obj.circumradius;
+    end
 
-      stlwrite(obj.triangulation,filename)
+    function t = get.thickness(obj)
+      t = obj.height;
     end
   end
 end
-

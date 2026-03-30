@@ -63,18 +63,24 @@ classdef STLExtractor < handle
 
       [Packing,geometricInfo] = obj.AnalyzeSTL;
 
-      l = HexagonalPrism.empty;
-
+      l = Particle.empty;
 
       for iParticle = 1:obj.nParticles
-        position = geometricInfo(iParticle).center;
-        radius = Packing.AllTheRadii(iParticle);
-        thickness = Packing.AllTheHeights(iParticle);
-        normal = geometricInfo(iParticle).axes;
+        position     = geometricInfo(iParticle).center;
+        circumradius = Packing.AllTheRadii(iParticle);
+        height       = Packing.AllTheHeights(iParticle);
+        normal       = geometricInfo(iParticle).axes;
         faceRotation = Packing.AllTheAxes2{iParticle};
-        triangulation = geometricInfo(iParticle).TR;
-        l(iParticle) = HexagonalPrism(position, radius, thickness,normal,faceRotation,triangulation);
+        tri          = geometricInfo(iParticle).TR;
+        nSides       = Packing.AllNSides(iParticle);
 
+        if nSides == 6
+          l(iParticle) = HexagonalPrism(position, circumradius, height, normal, faceRotation, tri);
+        elseif nSides > 0
+          l(iParticle) = Prism(position, nSides, circumradius, height, normal, faceRotation, tri);
+        else
+          l(iParticle) = Sphere(position, circumradius, tri);
+        end
       end
 
       opts = namedargs2cell(options);
@@ -166,22 +172,26 @@ classdef STLExtractor < handle
 
     function [Packing,geometricInfo] = processParticles(obj)
 
-
       Packing = {};
-
 
       for iParticle=1:obj.nParticles
 
-        [TheAxis, TheRadius,TheAxialHeight, center,TheAxis2,TR] = obj.processIndividualParticle(iParticle);
-        Packing.AllTheAxes{iParticle} = TheAxis ;
-        Packing.AllTheAxes2{iParticle} = TheAxis2 ;
-        Packing.AllTheRadii(iParticle) = TheRadius(1) ;
-        Packing.AllTheHeights(iParticle) = TheAxialHeight ;
+        [TheAxis, TheRadius, TheAxialHeight, center, TheAxis2, TR, nSides] = ...
+            obj.processIndividualParticle(iParticle);
+        Packing.AllTheAxes{iParticle}  = TheAxis;
+        Packing.AllTheAxes2{iParticle} = TheAxis2;
+        Packing.AllTheRadii(iParticle) = TheRadius(1);
+        Packing.AllTheHeights(iParticle) = TheAxialHeight;
+        Packing.AllNSides(iParticle)   = nSides;
 
-        thisInfo.volume = calculateHexagonalArea(TheRadius(1))*TheAxialHeight;
+        if nSides > 0  % prism
+          thisInfo.volume = regularPolygonArea(nSides, TheRadius(1)) * TheAxialHeight;
+        else  % sphere
+          thisInfo.volume = (4/3) * pi * TheRadius(1)^3;
+        end
         thisInfo.center = center;
-        thisInfo.axes = TheAxis;
-        thisInfo.TR = TR;
+        thisInfo.axes   = TheAxis;
+        thisInfo.TR     = TR;
         geometricInfo(iParticle) = thisInfo;
       end
 
@@ -191,12 +201,12 @@ classdef STLExtractor < handle
 
 
 
-    function [TheAxis, TheRadius,TheAxialHeight,center, TheAxis2,Tri2]  = processIndividualParticle(obj,iParticle)
+    function [TheAxis, TheRadius, TheAxialHeight, center, TheAxis2, Tri2, nSides] = ...
+        processIndividualParticle(obj, iParticle)
       arguments
         obj STLExtractor
         iParticle (1,1) double % particle index to process
       end
-
 
       % build a connectivity list for this particle
       localTR = obj.buildLocalTriangulation(iParticle);
@@ -210,6 +220,9 @@ classdef STLExtractor < handle
       % as localPoints, so that we can use it to compute the distance
       % from the center to each point
       xC = repmat(mean(localPoints,1),size(localPoints,1),1) ;
+
+      % Compute distances from center; used for both prism and sphere detection
+      DistFromCenter = sqrt(sum((localPoints-xC).^2, 2)) ;
 
       % construct a list of all edges in the triangles by combining pairwise
       % all the points IDs in the particles triangles
@@ -247,24 +260,47 @@ classdef STLExtractor < handle
 
       % construct a graph connecting these parallel edges
       Gedges = graph(SameDir) ;
-
       [binsEdges,binsizes] = conncomp(Gedges) ;
-      twelveParallelbin = find(binsizes==12) ;
-      twelveParallelEdges = find(binsEdges==twelveParallelbin) ;
 
-      k = 1 ;
-      TheAxis = [...
-        localPoints(edges(twelveParallelEdges(k),2),1)-localPoints(edges(twelveParallelEdges(k),1),1),...
-        localPoints(edges(twelveParallelEdges(k),2),2)-localPoints(edges(twelveParallelEdges(k),1),2),...
-        localPoints(edges(twelveParallelEdges(k),2),3)-localPoints(edges(twelveParallelEdges(k),1),3)] ;
-      TheAxialHeight = norm(TheAxis) ;
+      % Classify particle shape.
+      % For a regular n-gonal prism, the n lateral edges each appear twice in
+      % the triangle-derived edge list (shared by 2 adjacent side triangles),
+      % producing a group of 2n mutually parallel edges.
+      % A sphere has no such group (all vertices are equidistant from center).
+      [maxGroupSize, axialBin] = max(binsizes) ;
+      isPrism  = maxGroupSize >= 6 && mod(maxGroupSize, 2) == 0 ;
+      isSphere = ~isPrism && (std(DistFromCenter) / mean(DistFromCenter) < 0.01) ;
 
+      if isPrism
+        nSides = maxGroupSize / 2 ;
+        axialParallelEdges = find(binsEdges == axialBin) ;
 
-      DistFromCenter = sqrt(sum((localPoints-xC).^2,2)) ;
-      TheRadius = sqrt(DistFromCenter.^2-(TheAxialHeight/2)^2) ;
+        k = 1 ;
+        TheAxis = [...
+          localPoints(edges(axialParallelEdges(k),2),1)-localPoints(edges(axialParallelEdges(k),1),1),...
+          localPoints(edges(axialParallelEdges(k),2),2)-localPoints(edges(axialParallelEdges(k),1),2),...
+          localPoints(edges(axialParallelEdges(k),2),3)-localPoints(edges(axialParallelEdges(k),1),3)] ;
+        TheAxialHeight = norm(TheAxis) ;
+        TheRadius = sqrt(DistFromCenter.^2 - (TheAxialHeight/2)^2) ;
+
+      elseif isSphere
+        nSides         = 0 ;           % sentinel: 0 = sphere
+        TheAxis        = [0, 0, 1] ;   % convention: undefined for spheres
+        TheAxialHeight = 0 ;
+        TheRadius      = repmat(mean(DistFromCenter), size(DistFromCenter)) ;
+
+      else
+        STLExtractorError.throwError('STLExtractor', 'UnrecognizedShape', ...
+          sprintf('Cannot classify particle: largest parallel edge group = %d, radii CV = %.4f', ...
+            maxGroupSize, std(DistFromCenter)/mean(DistFromCenter))) ;
+      end
 
       % compute the GeometricType associated with this particle
-      gt = GeometricType(TheRadius(1),TheAxialHeight);
+      if isPrism
+        gt = GeometricType(TheRadius(1), TheAxialHeight, sprintf("prism_n%d", nSides));
+      else
+        gt = GeometricType(TheRadius(1), 0, "sphere");
+      end
       obj.particleGeometry(iParticle) = gt;
 
       % starting from the second particle, we should compare its
@@ -287,26 +323,29 @@ classdef STLExtractor < handle
         end
       end
 
+      if isPrism
+        TheAxis = TheAxis./TheAxialHeight ;
 
-      TheAxis = TheAxis./TheAxialHeight ;
+        zProjection = dot(TheAxis,[0,0,1]);
+        upSign = sign(zProjection);
 
-      zProjection = dot(TheAxis,[0,0,1]);
-      upSign = sign(zProjection);
-
-      if upSign ~= 0
-        TheAxis = upSign.*TheAxis ;
+        if upSign ~= 0
+          TheAxis = upSign.*TheAxis ;
+        end
       end
-
 
       localPoints = (localPoints-xC) + xC ;
       Tri2 = triangulation(localTriangles,localPoints) ;
       center = xC(1,:);
-      xC = mean(localPoints,1) ;
-      CenterToVertex = localPoints(1,:)-xC ;
-      TheAxis2 = CenterToVertex - dot(CenterToVertex,TheAxis).*TheAxis ;
-      TheAxis2 = TheAxis2./norm(TheAxis2) ;
-      TheAxis3 = cross(TheAxis,TheAxis2) ;
 
+      if isPrism
+        xC = mean(localPoints,1) ;
+        CenterToVertex = localPoints(1,:)-xC ;
+        TheAxis2 = CenterToVertex - dot(CenterToVertex,TheAxis).*TheAxis ;
+        TheAxis2 = TheAxis2./norm(TheAxis2) ;
+      else
+        TheAxis2 = [1, 0, 0] ;  % placeholder; not used for spheres
+      end
 
       if obj.shouldSave
         thisFilename = fullfile(obj.saveDir, ...

@@ -6,7 +6,7 @@ classdef ExtractedPacking < handle
     end
 
     properties (SetAccess = private)
-        items (1,:) HexagonalPrism
+        items (1,:) Particle
         xmin (1,1) double
         xmax (1,1) double
         ymin (1,1) double
@@ -41,7 +41,7 @@ classdef ExtractedPacking < handle
             %   ep = EXTRACTEDPACKING(prisms) will create a packing from a given
             %       array of HEXAGONALPRISM objects. 
             arguments
-                prisms (1,:) HexagonalPrism
+                prisms (1,:) Particle
                 options.BoundingBoxLength (1,1) double = NaN
                 options.ZMinLimit (1,1) double = NaN % Minimum limit of z-position to include particles (will eliminate particles below this position
                 options.ZMaxLimit (1,1) double = NaN % Maximum limit of z-position to include particles (will eliminate particles above this position
@@ -196,28 +196,13 @@ classdef ExtractedPacking < handle
         function initializeLimitsAndStatistics(obj)
             % INITIALIZELIMITS Define the i-{min,max} attributes (e.g. "xmin","ymax" etc)
 
-            % 12 because there 2 faces of 6 vertices in each prism;
-            nVertices = 12 * length(obj);
-            xvalues = zeros(1,nVertices);
-            yvalues = zeros(1,nVertices);
-            zvalues = zeros(1,nVertices);
-
-            for iPrism = 1:length(obj)
-                hp = obj.items(iPrism);
-                idxmin = 12*(iPrism-1)+1;
-                idxmax = 12*(iPrism-1)+12;
-                xvalues(idxmin:idxmax) = hp.vertices(:,1);
-                yvalues(idxmin:idxmax) = hp.vertices(:,2);
-                zvalues(idxmin:idxmax) = hp.vertices(:,3);
-
-            end
-
-            obj.xmin = min(xvalues);
-            obj.xmax = max(xvalues);
-            obj.ymin = min(yvalues);
-            obj.ymax = max(yvalues);
-            obj.zmin = min(zvalues);
-            obj.zmax = max(zvalues);
+            allVerts = cell2mat(arrayfun(@(p) p.vertices, obj.items, 'UniformOutput', false)');
+            obj.xmin = min(allVerts(:,1));
+            obj.xmax = max(allVerts(:,1));
+            obj.ymin = min(allVerts(:,2));
+            obj.ymax = max(allVerts(:,2));
+            obj.zmin = min(allVerts(:,3));
+            obj.zmax = max(allVerts(:,3));
             obj.Lx = obj.xmax - obj.xmin;
             obj.Ly = obj.ymax - obj.ymin;
             obj.Lz = obj.zmax - obj.zmin;

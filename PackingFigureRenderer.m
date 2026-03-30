@@ -10,7 +10,7 @@ classdef PackingFigureRenderer < handle
         colorMap containers.Map % a mapping of char vectors to a row of `colorScheme` (see below)
         colorScheme (:,3) double % a matrix of possible RGB vectors to color the particles
         colorIndex (1,1) double = 0 % current row of the matrix above
-        prisms (1,:) HexagonalPrism
+        prisms (1,:) Particle
     end
 
     methods
@@ -33,11 +33,10 @@ classdef PackingFigureRenderer < handle
 
             arguments
                 obj PackingFigureRenderer
-                hexPrism HexagonalPrism
+                hexPrism Particle
             end
-            
-            % Create unique key based on radius and thickness
-            key = sprintf('r%.6f_t%.6f', hexPrism.radius, hexPrism.thickness);
+
+            key = hexPrism.colorKey();
 
             color = obj.colorMap(key);
         end
@@ -71,12 +70,11 @@ classdef PackingFigureRenderer < handle
     
         function buildColorTable(obj)
             
-            % Sort the prisms array by the radius of each element
-            [~, sortedIndices] = sort([obj.prisms.radius]);
+            % Sort the prisms array by volume
+            [~, sortedIndices] = sort(arrayfun(@(p) p.volume, obj.prisms));
             obj.prisms = obj.prisms(sortedIndices);
-            % Create unique key based on radius and thickness
             for hexPrism = obj.prisms
-                key = sprintf('r%.6f_t%.6f', hexPrism.radius, hexPrism.thickness);
+                key = hexPrism.colorKey();
     
                 % Check if we already have a color for this prism type
                 if isKey(obj.colorMap, key)
