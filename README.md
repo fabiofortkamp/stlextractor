@@ -1,4 +1,4 @@
-# stlextractor - version 0.11.0
+# stlextractor - version 0.12.0
 
 
 MATLAB package to process a large STL file containing a packing of multiple hexagonal 

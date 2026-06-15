@@ -1,5 +1,5 @@
 % STLExtractor
-% Version 0.11.0 12-Jun-2026
+% Version 0.12.0 15-Jun-2026
 %
 % MATLAB package to process a large STL file containing a packing of
 % hexagonal prisms and extract each prism's geometric parameters.

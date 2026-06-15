@@ -14,6 +14,8 @@ sequence skips directly to the next release.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-06-15
+
 ### Changed
 - Use sparse matrices and a more efficient formulation for the connectivity
   matrix construction.
