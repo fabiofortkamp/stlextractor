@@ -1,4 +1,4 @@
-# stlextractor - version 0.11.0
+# stlextractor - version 0.12.0
 
 
 MATLAB package to process a large STL file containing a packing of multiple hexagonal 
@@ -35,6 +35,29 @@ parsing and processing the file is an instance of `ExtractedPacking`.
 ## Testing
 
 Run `runtests("tests")` in the MATLAB Command Window to run the test suite.
+
+## Versioning
+
+This package follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+(`MAJOR.MINOR.PATCH`). While at `0.x`, minor releases may introduce breaking
+changes; downstream projects should pin to a specific tag.
+
+The version is declared in three places and must be kept in sync on every
+release:
+
+1. `Contents.m` — `% Version X.Y.Z DD-Mon-YYYY` (queryable via `ver('STLExtractor')`)
+2. `README.md` — the title line
+3. A Git tag of the form `vX.Y.Z`, with a matching entry in `CHANGELOG.md`
+
+Release procedure:
+
+```sh
+# 1. Update Contents.m, README.md, and CHANGELOG.md (move Unreleased -> X.Y.Z)
+git commit -am "Release vX.Y.Z"
+git tag vX.Y.Z
+git push && git push --tags
+# 2. Cut a GitHub Release from the tag, pasting the CHANGELOG section as notes.
+```
 
 ## I/O
 

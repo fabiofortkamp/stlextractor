@@ -21,10 +21,15 @@ try
     % Validate cutoff direction
     STLExtractorError.mustBeValidDirection(options.CutoffDirection);
 
+    if options.RemoveOutlierRangeZ
+        zMinLimit = options.OutlierZThreshold;
+    else
+        zMinLimit = NaN;
+    end
+
     e = STLExtractor(input,[],"ShouldSave",false);
     ep = e.process( ...
-        'RemoveOutlierRangeZ', options.RemoveOutlierRangeZ, ...
-        'OutlierZThreshold', options.OutlierZThreshold, ...
+        'ZMinLimit', zMinLimit, ...
         'BoundingBoxLength', options.BoundingBoxLength);
     if options.Cutoff > 0
         ep = ep.cutoff(options.Cutoff,options.CutoffDirection);
