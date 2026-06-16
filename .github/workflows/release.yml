@@ -1,0 +1,98 @@
+# Authored by Claude (Anthropic, model claude-opus-4-7) on 2026-06-16,
+# in collaboration with Fábio Pinto Fortkamp.
+
+name: Release
+
+# Cuts a GitHub Release whenever a commit lands on `main` (either a direct
+# push or a merged pull request — both surface as a push event on `main`).
+#
+# The version is the single source of truth declared in `Contents.m`:
+#     % Version X.Y.Z DD-Mon-YYYY
+#
+# If a tag `vX.Y.Z` already exists, the job is a no-op, so re-runs and
+# unrelated pushes to `main` are safe.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from Contents.m
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION=$(grep -E '^% Version[[:space:]]+' Contents.m | awk '{print $3}')
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Could not parse a SemVer version from Contents.m (got: '$VERSION')"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: v$VERSION"
+
+      - name: Check if tag already exists
+        id: check
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.tag }}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on origin — nothing to release."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Tag $TAG does not exist — proceeding with release."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract release notes from CHANGELOG.md
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { flag=1; next }
+            flag && /^## \[/          { exit }
+            flag                      { print }
+          ' CHANGELOG.md > release_notes.md
+          # Strip leading/trailing blank lines.
+          sed -i -e '/./,$!d' -e ':a' -e '/^\n*$/{$d;N;ba' -e '}' release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "::error::No CHANGELOG.md section found for version $VERSION"
+            exit 1
+          fi
+          echo "----- release_notes.md -----"
+          cat release_notes.md
+          echo "----------------------------"
+
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.tag }}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.tag }}"
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file release_notes.md \
+            --latest \
+            --verify-tag
