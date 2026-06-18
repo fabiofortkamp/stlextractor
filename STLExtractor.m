@@ -250,6 +250,11 @@ classdef STLExtractor < handle
 
       [binsEdges,binsizes] = conncomp(Gedges) ;
       twelveParallelbin = find(binsizes==12) ;
+      if numel(twelveParallelbin) ~= 1
+        STLExtractorError.throwError("STLExtractor", "InvalidParticleGeometry", ...
+          sprintf("Particle %d: expected exactly one group of 12 parallel edges, found %d.", ...
+          iParticle, numel(twelveParallelbin)));
+      end
       twelveParallelEdges = find(binsEdges==twelveParallelbin) ;
 
       k = 1 ;

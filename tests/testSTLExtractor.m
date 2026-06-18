@@ -126,5 +126,43 @@ classdef testSTLExtractor < matlab.unittest.TestCase
 
         end
 
+        function test_rejects_particle_without_unique_axial_edges(testCase)
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            points = [
+                0, 0, 0;
+                1, 0, 0;
+                0, 1, 0;
+                0, 0, 1
+            ];
+            faces = [
+                1, 2, 3;
+                1, 4, 2;
+                2, 4, 3;
+                1, 3, 4
+            ];
+            stlwrite(triangulation(faces, points), filename);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+            try
+                extractor.process();
+                testCase.verifyFail("Expected unsupported geometry to be rejected.");
+            catch ME
+                testCase.verifyEqual(ME.identifier, ...
+                    'STLExtractor:STLExtractor:InvalidParticleGeometry');
+                testCase.verifyTrue(contains(ME.message, "Particle 1"));
+                testCase.verifyTrue(contains(ME.message, ...
+                    "expected exactly one group of 12 parallel edges"));
+                testCase.verifyTrue(contains(ME.message, "found 0"));
+            end
+        end
+
     end
+end
+
+function deleteIfExists(filename)
+if isfile(filename)
+    delete(filename);
+end
 end
