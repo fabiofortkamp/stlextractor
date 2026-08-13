@@ -187,6 +187,21 @@ classdef testSTLExtractor < matlab.unittest.TestCase
                 "MATLAB:polyfun:stlFailedToRead");
         end
 
+        function test_rejects_valid_stl_with_no_facets(testCase)
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            fid = fopen(filename, "w");
+            testCase.assertGreaterThan(fid, 0);
+            fprintf(fid, "solid empty\nendsolid empty\n");
+            fclose(fid);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
+            testCase.verifyError(@() extractor.process(), ...
+                "MATLAB:polyfun:stlInvalidData");
+        end
+
         function test_process_can_parse_single_particle_mesh(testCase)
             testFileDir = fullfile(projectDir, "tests", "test_stl_files");
             filename = fullfile(testFileDir, ...
