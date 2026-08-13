@@ -158,6 +158,70 @@ classdef testSTLExtractor < matlab.unittest.TestCase
             end
         end
 
+        function test_rejects_malformed_stl_input(testCase)
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            fid = fopen(filename, "w");
+            testCase.assertGreaterThan(fid, 0);
+            fprintf(fid, "not an stl file");
+            fclose(fid);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
+            testCase.verifyError(@() extractor.process(), ...
+                "MATLAB:polyfun:stlFailedToRead");
+        end
+
+        function test_rejects_empty_stl_input(testCase)
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            fid = fopen(filename, "w");
+            testCase.assertGreaterThan(fid, 0);
+            fclose(fid);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
+            testCase.verifyError(@() extractor.process(), ...
+                "MATLAB:polyfun:stlFailedToRead");
+        end
+
+        function test_process_can_parse_single_particle_mesh(testCase)
+            testFileDir = fullfile(projectDir, "tests", "test_stl_files");
+            filename = fullfile(testFileDir, ...
+                "particle_r_1_t_1_c_0_0_0_n_0_0_1.stl");
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
+            extractedPacking = extractor.process();
+
+            testCase.verifyEqual(length(extractedPacking), 1);
+        end
+
+        function test_rejects_non_manifold_geometry(testCase)
+            filename = tempname + ".stl";
+            cleanup = onCleanup(@() deleteIfExists(filename));
+
+            points = [
+                0, 0, 0;
+                1, 0, 0;
+                0, 1, 0;
+                0, -1, 0;
+                0, 0, 1
+            ];
+            faces = [
+                1, 2, 3;
+                2, 1, 4;
+                1, 2, 5
+            ];
+            stlwrite(triangulation(faces, points), filename);
+
+            extractor = STLExtractor(filename, [], "ShouldSave", false);
+
+            testCase.verifyError(@() extractor.process(), ...
+                "STLExtractor:STLExtractor:InvalidParticleGeometry");
+        end
+
     end
 end
 
