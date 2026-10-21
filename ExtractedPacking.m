@@ -261,7 +261,7 @@ classdef ExtractedPacking < handle
             for iPrism = 1:length(obj)
                 hp = obj.items(iPrism);
                 for j = [1,2,3]
-                    if strcmp(options.Method, CutoffMethod.vertices)
+                    if options.Method == CutoffMethod.vertices
                         hexagonPositionsMin(iPrism,j) = min(hp.vertices(:,j));
                         hexagonPositionsMax(iPrism,j) = max(hp.vertices(:,j));
                     else

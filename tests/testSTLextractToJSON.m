@@ -8,7 +8,7 @@ inputFile = fullfile(projectDir, "tests", "test_stl_files", ...
 outputFile = tempname + ".json";
 cleanup = onCleanup(@() deleteIfExists(outputFile));
 
-STLextractToJSON(inputFile, outputFile);
+STLextractToJSON(inputFile, outputFile, "RemoveOutlierRangeZ", false);
 
 testCase.verifyTrue(isfile(outputFile));
 decoded = jsondecode(fileread(outputFile));
