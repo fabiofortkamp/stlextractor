@@ -12,7 +12,7 @@ releases. Once the API is considered stable, the package will be released as
 Note: tags `v0.4.0`, `v0.9.0`, and `v0.10.0` were never published; the
 sequence skips directly to the next release.
 
-## [Unreleased]
+## [0.13.0] - 2026-10-22
 
 ### Fixed
 - `ExtractedPacking`: `cutoff`/`cutoffz` compared the `Method` option against
@@ -22,6 +22,10 @@ sequence skips directly to the next release.
   behavior described under `[0.5.0]`) is now actually applied, which changes
   which particles are kept by `cutoff`/`cutoffz` for existing callers relying
   on the default `Method`.
+- `STLExtractor`: a particle whose triangulation does not yield exactly one
+  group of 12 parallel edges (i.e. is not a well-formed hexagonal prism) is
+  now rejected with an `InvalidParticleGeometry` error, instead of silently
+  extracting bogus axial and face-rotation data.
 
 ## [0.12.0] - 2026-06-15
 
