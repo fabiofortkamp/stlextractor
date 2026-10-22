@@ -9,8 +9,8 @@ name: Release
 # The version is the single source of truth declared in `Contents.m`:
 #     % Version X.Y.Z DD-Mon-YYYY
 #
-# If a tag `vX.Y.Z` already exists, the job is a no-op, so re-runs and
-# unrelated pushes to `main` are safe.
+# If the GitHub Release for `vX.Y.Z` already exists, the job is a no-op.
+# An existing tag is reused if a previous run failed before publishing it.
 
 on:
   push:
@@ -41,21 +41,30 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "Detected version: v$VERSION"
 
-      - name: Check if tag already exists
+      - name: Check if tag and release already exist
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           TAG="${{ steps.version.outputs.tag }}"
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists on origin — nothing to release."
-            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG exists on origin; reusing it."
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Tag $TAG does not exist — proceeding with release."
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG does not exist — it will be created."
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG already exists."
+            echo "release_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "GitHub Release $TAG does not exist — it will be created."
+            echo "release_exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Extract release notes from CHANGELOG.md
-        if: steps.check.outputs.exists == 'false'
+        if: steps.check.outputs.release_exists == 'false'
         run: |
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
@@ -75,7 +84,7 @@ jobs:
           echo "----------------------------"
 
       - name: Create and push tag
-        if: steps.check.outputs.exists == 'false'
+        if: steps.check.outputs.tag_exists == 'false'
         run: |
           set -euo pipefail
           TAG="${{ steps.version.outputs.tag }}"
@@ -85,7 +94,7 @@ jobs:
           git push origin "$TAG"
 
       - name: Create GitHub Release
-        if: steps.check.outputs.exists == 'false'
+        if: steps.check.outputs.release_exists == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
