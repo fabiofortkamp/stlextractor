@@ -34,7 +34,10 @@ parsing and processing the file is an instance of `ExtractedPacking`.
 
 ## Testing
 
-Run `runtests("tests")` in the MATLAB Command Window to run the test suite.
+- Run `runtests("tests")` in the MATLAB Command Window to run the test suite.
+- Run `coverage` in the MATLAB Command Window to run the tests and open a test coverage report
+- See [docs/known-untested.md](docs/known-untested.md) for the branches the suite deliberately does not cover
+
 
 ## Versioning
 

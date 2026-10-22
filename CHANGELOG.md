@@ -14,6 +14,15 @@ sequence skips directly to the next release.
 
 ## [Unreleased]
 
+### Fixed
+- `ExtractedPacking`: `cutoff`/`cutoffz` compared the `Method` option against
+  `CutoffMethod` enum members with `strcmp`, which is always false for
+  enumeration members, so `CutoffMethod.vertices` silently behaved like
+  `CutoffMethod.centers` for every caller. Vertices-based filtering (the
+  behavior described under `[0.5.0]`) is now actually applied, which changes
+  which particles are kept by `cutoff`/`cutoffz` for existing callers relying
+  on the default `Method`.
+
 ## [0.12.0] - 2026-06-15
 
 ### Changed
