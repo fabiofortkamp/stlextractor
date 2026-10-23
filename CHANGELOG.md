@@ -12,7 +12,7 @@ releases. Once the API is considered stable, the package will be released as
 Note: tags `v0.4.0`, `v0.9.0`, and `v0.10.0` were never published; the
 sequence skips directly to the next release.
 
-## [Unreleased]
+## [0.14.0] - 2026-10-23
 
 ### Added
 - Test coverage for the remaining known failure modes from issue #13: two
