@@ -251,11 +251,12 @@ classdef testSTLExtractor < matlab.unittest.TestCase
             points = TR.Points;
             faces = TR.ConnectivityList;
 
-            % translate a duplicate far away, then nudge it back so that its
-            % vertex 2 lands exactly on the original's vertex 1
-            duplicatePoints = points + [10, 0, 0];
-            translation = points(1, :) - duplicatePoints(2, :);
-            duplicatePoints = duplicatePoints + translation;
+            % Translate opposite extreme vertices together for point-only contact.
+            [~, minIdx] = min(points * [1; 2; 3]);
+            [~, maxIdx] = max(points * [1; 2; 3]);
+            duplicatePoints = points + (points(maxIdx, :) - points(minIdx, :));
+            testCase.assertEqual( ...
+                size(intersect(points, duplicatePoints, "rows"), 1), 1);
 
             mergedPoints = [points; duplicatePoints];
             mergedFaces = [faces; faces + size(points, 1)];
