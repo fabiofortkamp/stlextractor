@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite it using the metadata below.
+type: software
+title: stlextractor
+abstract: >-
+  MATLAB package to process a large STL file containing a packing of
+  hexagonal prisms and extract each prism's geometric parameters (radius,
+  axis, volume, etc.).
+authors:
+  - family-names: Fortkamp
+    given-names: "Fábio Pinto"
+    email: fabio@fabiofortkamp.com
+  - family-names: Insinga
+    given-names: Andrea
+    email: aroin@dtu.dk
+  - family-names: Bjørk
+    given-names: Rasmus
+    email: rabj@dtu.dk
+repository-code: "https://github.com/cmt-dtu-energy/stlextractor"
+version: 0.15.0
+license: MIT
+# NOTE (added while resolving issue #20): `version` matches the current
+# Contents.m version at the time this file was added. As of this writing
+# that version has not yet been tagged (the latest Git tag is v0.14.0);
+# update `version`/`date-released` together at the next tagged release.

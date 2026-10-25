@@ -17,6 +17,19 @@ have a certain mechanical strength). Alternatively, you can just use the project
 to save the individual STL files and import them into a simulation software, manually setting
 up different parameters.
 
+## Maintainer status
+
+As of October 2026, the original maintainer, Fábio Pinto Fortkamp, has
+stepped back from active day-to-day maintenance of this project. The
+designated points of contact within the `cmt-dtu-energy` organization are:
+
+- Andrea Insinga ([aroin@dtu.dk](mailto:aroin@dtu.dk))
+- Rasmus Bjørk ([rabj@dtu.dk](mailto:rabj@dtu.dk))
+
+For bug reports, feature requests, or questions, please open a
+[GitHub issue](https://github.com/cmt-dtu-energy/stlextractor/issues) —
+this remains the best way to get visibility.
+
 ## Installation
 
 - Clone this repo to a location of choice;
@@ -127,3 +140,7 @@ outside of a bounding box of length 90% of the original packing in the $y$ direc
 This length will then be applied to the $x$ and $z$ directions as well.
 
 If the `Cutoff` is 0, nothing is done.
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
